@@ -8,24 +8,15 @@ import android.content.Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
 import android.content.pm.ActivityInfo
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
-import android.graphics.Bitmap
-import android.graphics.Canvas
-import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 
 private const val ACTION_LAUNCH_APP = "de.thomaskuenneth.benice.intent.action.ACTION_LAUNCH_APP"
@@ -40,14 +31,13 @@ class BeNiceActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         shortcutManager = getSystemService(ShortcutManager::class.java)
         enableEdgeToEdge()
-        val list = installedApps()
         setContent {
             MaterialTheme(
                 colorScheme = defaultColorScheme()
             ) {
                 Box(Modifier.statusBarsPadding()) {
                     BeNiceScreen(
-                        appInfoList = list.sortedBy { it.label },
+                        appInfoList = installedApps(),
                         onClick = ::onClick,
                         onAddLinkClicked = ::onAddLinkClicked
                     )
@@ -70,25 +60,23 @@ class BeNiceActivity : ComponentActivity() {
         }
     }
 
-    private fun installedApps(): MutableList<AppInfo> {
-        val intent = Intent(Intent.ACTION_MAIN).also {
-            it.addCategory(Intent.CATEGORY_LAUNCHER)
-        }
-        val list = mutableListOf<AppInfo>()
-        val activities = packageManager.queryIntentActivities(intent, 0)
-        activities.forEach { info ->
-            if (info.activityInfo.screenOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
-                list.add(
-                    AppInfo(
-                        icon = info.activityInfo.loadIcon(packageManager),
-                        label = info.activityInfo.loadLabel(packageManager).toString(),
-                        packageName = info.activityInfo.packageName,
-                        className = info.activityInfo.name
+    private fun installedApps(): List<AppInfo> {
+        val intent = Intent(Intent.ACTION_MAIN)
+        intent.addCategory(Intent.CATEGORY_LAUNCHER)
+        return mutableListOf<AppInfo>().also { list ->
+            packageManager.queryIntentActivities(intent, 0).forEach { info ->
+                if (info.activityInfo.screenOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+                    list.add(
+                        AppInfo(
+                            icon = info.activityInfo.loadIcon(packageManager),
+                            label = info.activityInfo.loadLabel(packageManager).toString(),
+                            packageName = info.activityInfo.packageName,
+                            className = info.activityInfo.name
+                        )
                     )
-                )
+                }
             }
-        }
-        return list
+        }.sortedBy { it.label }
     }
 
     private fun onClick(appInfo: AppInfo) {
