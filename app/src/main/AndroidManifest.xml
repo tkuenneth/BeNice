@@ -18,12 +18,15 @@
         android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
 
         <activity
-            android:name=".AppPickerActivity"
+            android:name=".BeNiceActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="de.thomaskuenneth.benice.intent.action.ACTION_LAUNCH_APP" />
             </intent-filter>
         </activity>
 
