@@ -40,23 +40,7 @@ class BeNiceActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         shortcutManager = getSystemService(ShortcutManager::class.java)
         enableEdgeToEdge()
-        val intent = Intent(Intent.ACTION_MAIN).also {
-            it.addCategory(Intent.CATEGORY_LAUNCHER)
-        }
-        val list = mutableListOf<AppInfo>()
-        val activities = packageManager.queryIntentActivities(intent, 0)
-        activities.forEach { info ->
-            if (info.activityInfo.screenOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
-                list.add(
-                    AppInfo(
-                        icon = info.activityInfo.loadIcon(packageManager),
-                        label = info.activityInfo.loadLabel(packageManager).toString(),
-                        packageName = info.activityInfo.packageName,
-                        className = info.activityInfo.name
-                    )
-                )
-            }
-        }
+        val list = installedApps()
         setContent {
             MaterialTheme(
                 colorScheme = defaultColorScheme()
@@ -84,6 +68,27 @@ class BeNiceActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun installedApps(): MutableList<AppInfo> {
+        val intent = Intent(Intent.ACTION_MAIN).also {
+            it.addCategory(Intent.CATEGORY_LAUNCHER)
+        }
+        val list = mutableListOf<AppInfo>()
+        val activities = packageManager.queryIntentActivities(intent, 0)
+        activities.forEach { info ->
+            if (info.activityInfo.screenOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+                list.add(
+                    AppInfo(
+                        icon = info.activityInfo.loadIcon(packageManager),
+                        label = info.activityInfo.loadLabel(packageManager).toString(),
+                        packageName = info.activityInfo.packageName,
+                        className = info.activityInfo.name
+                    )
+                )
+            }
+        }
+        return list
     }
 
     private fun onClick(appInfo: AppInfo) {
@@ -119,25 +124,5 @@ class BeNiceActivity : ComponentActivity() {
                 .build()
             shortcutManager.requestPinShortcut(shortcutInfo, null)
         }
-    }
-}
-
-@Composable
-fun AppIconImage(drawable: Drawable) {
-    val bitmap = Bitmap.createBitmap(
-        drawable.intrinsicWidth, drawable.intrinsicHeight,
-        Bitmap.Config.ARGB_8888
-    )
-    val canvas = Canvas(bitmap)
-    drawable.setBounds(0, 0, canvas.width, canvas.height)
-    drawable.draw(canvas)
-    Box(
-        modifier = Modifier.size(48.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Image(
-            bitmap = bitmap.asImageBitmap(),
-            contentDescription = null
-        )
     }
 }
