@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "de.thomaskuenneth.benice"
-        minSdk = 30
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"

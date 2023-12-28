@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Be nice</string>
+    <string name="open_context_menu">Opens a context menu</string>
+    <string name="launch">Launch</string>
 </resources>
