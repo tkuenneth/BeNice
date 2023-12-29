@@ -13,11 +13,16 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.core.graphics.drawable.toBitmap
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 
 private const val ACTION_LAUNCH_APP = "de.thomaskuenneth.benice.intent.action.ACTION_LAUNCH_APP"
 private const val PACKAGE_NAME = "packageName"
@@ -27,6 +32,8 @@ class BeNiceActivity : ComponentActivity() {
 
     private lateinit var shortcutManager: ShortcutManager
 
+    private val installedAppsFlow = MutableStateFlow(emptyList<AppInfo>())
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         shortcutManager = getSystemService(ShortcutManager::class.java)
@@ -35,29 +42,26 @@ class BeNiceActivity : ComponentActivity() {
             MaterialTheme(
                 colorScheme = defaultColorScheme()
             ) {
-                Box(Modifier.statusBarsPadding()) {
-                    BeNiceScreen(
-                        appInfoList = installedApps(),
-                        onClick = ::onClick,
-                        onAddLinkClicked = ::onAddLinkClicked
-                    )
-                }
+                BeNiceScreen(
+                    installedAppsFlow = installedAppsFlow,
+                    onClick = ::onClick,
+                    onAddLinkClicked = ::onAddLinkClicked,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(color = MaterialTheme.colorScheme.background)
+                        .statusBarsPadding()
+                )
             }
+        }
+        launchApp(intent)
+        lifecycleScope.launch {
+            installedAppsFlow.value = installedApps()
         }
     }
 
-    override fun onNewIntent(intent: Intent?) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (ACTION_LAUNCH_APP == intent?.action) {
-            intent.getStringExtra(PACKAGE_NAME)?.let { packageName ->
-                intent.getStringExtra(CLASS_NAME)?.let { className ->
-                    launchApp(
-                        packageName = packageName,
-                        className = className
-                    )
-                }
-            }
-        }
+        launchApp(intent)
     }
 
     private fun installedApps(): List<AppInfo> {
@@ -79,9 +83,19 @@ class BeNiceActivity : ComponentActivity() {
         }.sortedBy { it.label }
     }
 
-    private fun onClick(appInfo: AppInfo) {
-        with(appInfo) {
-            launchApp(packageName = packageName, className = className)
+    private fun launchApp(intent: Intent) {
+        lifecycleScope.launch {
+            delay(500)
+            if (ACTION_LAUNCH_APP == intent.action) {
+                intent.getStringExtra(PACKAGE_NAME)?.let { packageName ->
+                    intent.getStringExtra(CLASS_NAME)?.let { className ->
+                        launchApp(
+                            packageName = packageName,
+                            className = className
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -96,6 +110,12 @@ class BeNiceActivity : ComponentActivity() {
                         FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
             )
             startActivity(this)
+        }
+    }
+
+    private fun onClick(appInfo: AppInfo) {
+        with(appInfo) {
+            launchApp(packageName = packageName, className = className)
         }
     }
 
