@@ -17,6 +17,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.lifecycleScope
@@ -32,7 +34,8 @@ class BeNiceActivity : ComponentActivity() {
 
     private lateinit var shortcutManager: ShortcutManager
 
-    private val installedAppsFlow = MutableStateFlow(emptyList<AppInfo>())
+    private val installedAppsResultFlow: MutableStateFlow<InstalledAppsResult> =
+        MutableStateFlow(InstalledAppsResult.Loading)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,8 +45,9 @@ class BeNiceActivity : ComponentActivity() {
             MaterialTheme(
                 colorScheme = defaultColorScheme()
             ) {
+                val installedAppsResult by installedAppsResultFlow.collectAsState()
                 BeNiceScreen(
-                    installedAppsFlow = installedAppsFlow,
+                    installedAppsResult = installedAppsResult,
                     onClick = ::onClick,
                     onAddLinkClicked = ::onAddLinkClicked,
                     modifier = Modifier
@@ -55,7 +59,7 @@ class BeNiceActivity : ComponentActivity() {
         }
         launchApp(intent)
         lifecycleScope.launch {
-            installedAppsFlow.value = installedApps()
+            installedAppsResultFlow.value = InstalledAppsResult.Success(installedApps())
         }
     }
 

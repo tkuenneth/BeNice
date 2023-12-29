@@ -3,4 +3,5 @@
     <string name="open_context_menu">Opens a context menu</string>
     <string name="launch">Launch</string>
     <string name="add_link">Add link</string>
+    <string name="no_portrait_apps">No apps found that would like to have the screen in a portrait orientation</string>
 </resources>

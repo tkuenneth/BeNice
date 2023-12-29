@@ -9,3 +9,10 @@ data class AppInfo(
     val packageName: String,
     val className: String
 )
+
+sealed class InstalledAppsResult(
+    data: List<AppInfo> = emptyList()
+) {
+    data object Loading : InstalledAppsResult()
+    data class Success(val data: List<AppInfo>) : InstalledAppsResult(data)
+}
