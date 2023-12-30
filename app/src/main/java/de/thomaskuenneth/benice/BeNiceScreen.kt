@@ -30,11 +30,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
-
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun BeNiceScreen(
-    installedAppsResult: InstalledAppsResult,
+    state: BeNiceScreenUiState,
     onClick: (AppInfo) -> Unit,
     onAddLinkClicked: (AppInfo) -> Unit,
     modifier: Modifier
@@ -46,22 +45,28 @@ fun BeNiceScreen(
         contentAlignment = Alignment.Center
     )
     {
-        when (installedAppsResult) {
-            is InstalledAppsResult.Loading -> CircularProgressIndicator()
-            is InstalledAppsResult.Success -> {
-                val installedApps = installedAppsResult.data
-                if (installedApps.isEmpty()) {
+        when (state.isLoading) {
+            true -> CircularProgressIndicator()
+            false -> {
+                if (state.installedApps.isEmpty()) {
                     Text(
-                        text = stringResource(id = R.string.no_portrait_apps),
+                        text = stringResource(
+                            id = if (state.filterOn) {
+                                R.string.no_portrait_apps
+                            } else {
+                                R.string.no_apps
+                            }
+                        ),
                         style = MaterialTheme.typography.displaySmall,
                         color = MaterialTheme.colorScheme.primary,
                         textAlign = TextAlign.Center
                     )
                 } else {
                     LazyVerticalGrid(
+                        modifier = Modifier.align(Alignment.TopStart),
                         columns = GridCells.Fixed(count = 2)
                     ) {
-                        installedApps.forEach { appInfo ->
+                        state.installedApps.forEach { appInfo ->
                             item {
                                 Row(
                                     modifier = Modifier

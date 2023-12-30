@@ -4,4 +4,7 @@
     <string name="launch">Launch</string>
     <string name="add_link">Add link</string>
     <string name="no_portrait_apps">No apps found that would like to have the screen in a portrait orientation</string>
+    <string name="filter_on">Filter is on</string>
+    <string name="filter_off">Filter is off</string>
+    <string name="no_apps">No apps found</string>
 </resources>

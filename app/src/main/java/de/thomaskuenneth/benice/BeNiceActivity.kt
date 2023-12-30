@@ -5,7 +5,7 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
-import android.content.pm.ActivityInfo
+import android.content.SharedPreferences
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.graphics.drawable.Icon
@@ -13,54 +13,103 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.FilterAltOff
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 
 private const val ACTION_LAUNCH_APP = "de.thomaskuenneth.benice.intent.action.ACTION_LAUNCH_APP"
 private const val PACKAGE_NAME = "packageName"
 private const val CLASS_NAME = "className"
+private const val PREFS_FILTER_ON = "filterOn"
 
 class BeNiceActivity : ComponentActivity() {
 
     private lateinit var shortcutManager: ShortcutManager
+    private lateinit var prefs: SharedPreferences
 
-    private val installedAppsResultFlow: MutableStateFlow<InstalledAppsResult> =
-        MutableStateFlow(InstalledAppsResult.Loading)
-
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         shortcutManager = getSystemService(ShortcutManager::class.java)
+        prefs = PreferenceManager.getDefaultSharedPreferences(this)
         enableEdgeToEdge()
+        val viewModel by viewModels<BeNiceViewModel>()
+        viewModel.setFilterOn(prefs.getBoolean(PREFS_FILTER_ON, true))
         setContent {
             MaterialTheme(
                 colorScheme = defaultColorScheme()
             ) {
-                val installedAppsResult by installedAppsResultFlow.collectAsState()
-                BeNiceScreen(
-                    installedAppsResult = installedAppsResult,
-                    onClick = ::onClick,
-                    onAddLinkClicked = ::onAddLinkClicked,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(color = MaterialTheme.colorScheme.background)
-                        .statusBarsPadding()
-                )
+                val state by viewModel.uiState.collectAsState()
+                val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+                Scaffold(
+                    topBar = {
+                        TopAppBar(
+                            title = { Text(text = stringResource(id = R.string.app_name)) },
+                            scrollBehavior = scrollBehavior,
+                            actions = {
+                                IconButtonWithTooltip(
+                                    onClick = {
+                                        val newValue = !state.filterOn
+                                        viewModel.setFilterOn(newValue)
+                                        prefs.edit().putBoolean(PREFS_FILTER_ON, newValue).apply()
+                                    },
+                                    imageVector = if (state.filterOn) {
+                                        Icons.Default.FilterAlt
+                                    } else {
+                                        Icons.Default.FilterAltOff
+                                    },
+                                    contentDescription = stringResource(
+                                        id = if (state.filterOn) {
+                                            R.string.filter_on
+                                        } else {
+                                            R.string.filter_off
+                                        }
+                                    )
+                                )
+                            }
+                        )
+                    },
+                    // currently necessary to achieve edge to edge at the bottom
+                    bottomBar = { Spacer(modifier = Modifier.height(0.dp)) },
+                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+                ) { paddingValues ->
+                    BeNiceScreen(
+                        state = state,
+                        onClick = ::onClick,
+                        onAddLinkClicked = ::onAddLinkClicked,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues = paddingValues)
+                            .background(color = MaterialTheme.colorScheme.background)
+                    )
+                }
             }
         }
+        viewModel.queryInstalledApps(packageManager)
         launchApp(intent)
-        lifecycleScope.launch {
-            installedAppsResultFlow.value = InstalledAppsResult.Success(installedApps())
-        }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -68,28 +117,9 @@ class BeNiceActivity : ComponentActivity() {
         launchApp(intent)
     }
 
-    private fun installedApps(): List<AppInfo> {
-        val intent = Intent(Intent.ACTION_MAIN)
-        intent.addCategory(Intent.CATEGORY_LAUNCHER)
-        return mutableListOf<AppInfo>().also { list ->
-            packageManager.queryIntentActivities(intent, 0).forEach { info ->
-                if (info.activityInfo.screenOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
-                    list.add(
-                        AppInfo(
-                            icon = info.activityInfo.loadIcon(packageManager),
-                            label = info.activityInfo.loadLabel(packageManager).toString(),
-                            packageName = info.activityInfo.packageName,
-                            className = info.activityInfo.name
-                        )
-                    )
-                }
-            }
-        }.sortedBy { it.label }
-    }
-
     private fun launchApp(intent: Intent) {
         lifecycleScope.launch {
-            delay(500)
+            delay(600)
             if (ACTION_LAUNCH_APP == intent.action) {
                 intent.getStringExtra(PACKAGE_NAME)?.let { packageName ->
                     intent.getStringExtra(CLASS_NAME)?.let { className ->
