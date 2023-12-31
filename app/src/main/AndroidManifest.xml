@@ -17,7 +17,7 @@
         android:theme="@style/Theme.AppCompat.DayNight.NoActionBar">
 
         <activity
-            android:name=".BeNiceActivity"
+            android:name=".AppChooserActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -27,7 +27,7 @@
         </activity>
 
         <activity
-            android:name=".BeNiceLaunchPadActivity"
+            android:name=".BeNiceActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="de.thomaskuenneth.benice.intent.action.ACTION_LAUNCH_APP" />
