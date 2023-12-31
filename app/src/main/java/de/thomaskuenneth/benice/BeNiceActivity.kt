@@ -1,6 +1,5 @@
 package de.thomaskuenneth.benice
 
-import android.content.ComponentName
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
@@ -37,14 +36,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
-import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
-private const val ACTION_LAUNCH_APP = "de.thomaskuenneth.benice.intent.action.ACTION_LAUNCH_APP"
-private const val PACKAGE_NAME = "packageName"
-private const val CLASS_NAME = "className"
 private const val PREFS_FILTER_ON = "filterOn"
 
 class BeNiceActivity : ComponentActivity() {
@@ -112,44 +105,6 @@ class BeNiceActivity : ComponentActivity() {
             }
         }
         viewModel.queryInstalledApps(packageManager)
-        launchApp(intent)
-    }
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        launchApp(intent)
-    }
-
-    private fun launchApp(intent: Intent) {
-        lifecycleScope.launch {
-            delay(600)
-            if (ACTION_LAUNCH_APP == intent.action) {
-                intent.getStringExtra(PACKAGE_NAME)?.let { packageName ->
-                    intent.getStringExtra(CLASS_NAME)?.let { className ->
-                        launchApp(
-                            packageName = packageName,
-                            className = className
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    private fun launchApp(packageName: String, className: String) {
-        Intent().run {
-            component = ComponentName(
-                packageName,
-                className
-            )
-            addFlags(
-                FLAG_ACTIVITY_LAUNCH_ADJACENT or
-                        FLAG_ACTIVITY_NEW_TASK or
-                        FLAG_ACTIVITY_NO_HISTORY or
-                        FLAG_ACTIVITY_CLEAR_TASK
-            )
-            startActivity(this)
-        }
     }
 
     private fun onClick(appInfo: AppInfo) {
@@ -163,11 +118,7 @@ class BeNiceActivity : ComponentActivity() {
             val shortcutInfo = ShortcutInfo.Builder(this, appInfo.className)
                 .setIcon(Icon.createWithAdaptiveBitmap(appInfo.icon.toBitmap()))
                 .setShortLabel(appInfo.label)
-                .setIntent(Intent(this, BeNiceActivity::class.java).also { intent ->
-                    intent.action = ACTION_LAUNCH_APP
-                    intent.putExtra(PACKAGE_NAME, appInfo.packageName)
-                    intent.putExtra(CLASS_NAME, appInfo.className)
-                })
+                .setIntent(createBeNiceLaunchIntent(appInfo))
                 .build()
             shortcutManager.requestPinShortcut(shortcutInfo, null)
         }
