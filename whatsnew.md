@@ -1,5 +1,4 @@
 # What's new
 
-- Toggle between all apps and those locked to portrait mode
-- Toggle state is saved
-- 
+- Bottom sheet animates upon closing
+- We can now open the app info

@@ -1,6 +1,5 @@
 package de.thomaskuenneth.benice
 
-import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -15,14 +14,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun MenuItem(
     onClick: () -> Unit,
-    @DrawableRes imageRes: Int,
+    imageVector: ImageVector,
     @StringRes textRes: Int
 ) {
     Row(
@@ -35,7 +34,7 @@ fun MenuItem(
             .padding(all = 16.dp)
     ) {
         Image(
-            painter = painterResource(id = imageRes),
+            imageVector = imageVector,
             contentDescription = null,
             colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary)
         )

@@ -19,6 +19,7 @@
         <activity
             android:name=".BeNiceActivity"
             android:exported="true"
+            android:launchMode="singleInstance"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

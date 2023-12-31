@@ -2,13 +2,15 @@ package de.thomaskuenneth.benice
 
 import android.content.ComponentName
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-import android.content.Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+import android.content.Intent.FLAG_ACTIVITY_NO_HISTORY
 import android.content.SharedPreferences
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.graphics.drawable.Icon
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -100,6 +102,7 @@ class BeNiceActivity : ComponentActivity() {
                         state = state,
                         onClick = ::onClick,
                         onAddLinkClicked = ::onAddLinkClicked,
+                        onOpenAppInfoClicked = ::onOpenAppInfoClicked,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(paddingValues = paddingValues)
@@ -141,7 +144,9 @@ class BeNiceActivity : ComponentActivity() {
             )
             addFlags(
                 FLAG_ACTIVITY_LAUNCH_ADJACENT or
-                        FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_RESET_TASK_IF_NEEDED
+                        FLAG_ACTIVITY_NEW_TASK or
+                        FLAG_ACTIVITY_NO_HISTORY or
+                        FLAG_ACTIVITY_CLEAR_TASK
             )
             startActivity(this)
         }
@@ -165,6 +170,19 @@ class BeNiceActivity : ComponentActivity() {
                 })
                 .build()
             shortcutManager.requestPinShortcut(shortcutInfo, null)
+        }
+    }
+
+    private fun onOpenAppInfoClicked(appInfo: AppInfo) {
+        Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).run {
+            data = Uri.parse("package:${appInfo.packageName}")
+            addFlags(
+                FLAG_ACTIVITY_LAUNCH_ADJACENT or
+                        FLAG_ACTIVITY_NEW_TASK or
+                        FLAG_ACTIVITY_NO_HISTORY or
+                        FLAG_ACTIVITY_CLEAR_TASK
+            )
+            startActivity(this)
         }
     }
 }

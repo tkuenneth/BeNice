@@ -12,14 +12,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddLink
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Launch
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -29,6 +35,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -36,10 +43,20 @@ fun BeNiceScreen(
     state: BeNiceScreenUiState,
     onClick: (AppInfo) -> Unit,
     onAddLinkClicked: (AppInfo) -> Unit,
+    onOpenAppInfoClicked: (AppInfo) -> Unit,
     modifier: Modifier
 ) {
     var contextMenuAppInfo by rememberSaveable { mutableStateOf<AppInfo?>(null) }
     val haptics = LocalHapticFeedback.current
+    val sheetState = rememberModalBottomSheetState()
+    val scope = rememberCoroutineScope()
+    val closeSheet = {
+        scope.launch { sheetState.hide() }.invokeOnCompletion {
+            if (!sheetState.isVisible) {
+                contextMenuAppInfo = null
+            }
+        }
+    }
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
@@ -100,6 +117,7 @@ fun BeNiceScreen(
         if (contextMenuAppInfo != null) {
             ModalBottomSheet(
                 onDismissRequest = { contextMenuAppInfo = null },
+                sheetState = sheetState,
                 windowInsets = WindowInsets(0),
             ) {
                 MenuItem(
@@ -107,19 +125,29 @@ fun BeNiceScreen(
                         contextMenuAppInfo?.let {
                             onClick(it)
                         }
-                        contextMenuAppInfo = null
+                        closeSheet()
                     },
-                    imageRes = R.drawable.baseline_launch_24,
+                    imageVector = Icons.Default.Launch,
                     textRes = R.string.launch
+                )
+                MenuItem(
+                    onClick = {
+                        contextMenuAppInfo?.let {
+                            onOpenAppInfoClicked(it)
+                        }
+                        closeSheet()
+                    },
+                    imageVector = Icons.Default.Info,
+                    textRes = R.string.open_app_info
                 )
                 MenuItem(
                     onClick = {
                         contextMenuAppInfo?.let {
                             onAddLinkClicked(it)
                         }
-                        contextMenuAppInfo = null
+                        closeSheet()
                     },
-                    imageRes = R.drawable.baseline_add_link_24,
+                    imageVector = Icons.Default.AddLink,
                     textRes = R.string.add_link
                 )
             }
