@@ -3,6 +3,10 @@ package de.thomaskuenneth.benice
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+import android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.content.Intent.FLAG_ACTIVITY_TASK_ON_HOME
 import android.os.Handler
 import android.os.Looper
 import androidx.activity.ComponentActivity
@@ -19,11 +23,12 @@ class BeNiceActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         Intent(this, AppChooserActivity::class.java).run {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            addFlags(FLAG_ACTIVITY_NEW_TASK)
             startActivity(this)
         }
         Handler(Looper.getMainLooper()).postDelayed({
             launchApp(intent)
+            finish()
         }, 500L)
     }
 
@@ -50,9 +55,9 @@ fun Context.launchApp(packageName: String, className: String) {
             className
         )
         addFlags(
-            Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT or
-                    Intent.FLAG_ACTIVITY_NEW_TASK or
-                    Intent.FLAG_ACTIVITY_NO_HISTORY
+            FLAG_ACTIVITY_LAUNCH_ADJACENT or
+                    FLAG_ACTIVITY_NEW_TASK or
+                    FLAG_ACTIVITY_TASK_ON_HOME
         )
         startActivity(this)
     }
@@ -61,7 +66,10 @@ fun Context.launchApp(packageName: String, className: String) {
 fun Context.createBeNiceLaunchIntent(appInfo: AppInfo) =
     Intent(this, BeNiceActivity::class.java).also { intent ->
         intent.action = ACTION_LAUNCH_APP
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        intent.addFlags(
+            FLAG_ACTIVITY_NEW_TASK or
+                    FLAG_ACTIVITY_CLEAR_TASK
+        )
         intent.putExtra(PACKAGE_NAME, appInfo.packageName)
         intent.putExtra(CLASS_NAME, appInfo.className)
     }

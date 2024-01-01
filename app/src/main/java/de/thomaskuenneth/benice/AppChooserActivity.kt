@@ -4,7 +4,6 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-import android.content.Intent.FLAG_ACTIVITY_NO_HISTORY
 import android.content.SharedPreferences
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
@@ -130,7 +129,6 @@ class AppChooserActivity : ComponentActivity() {
             addFlags(
                 FLAG_ACTIVITY_LAUNCH_ADJACENT or
                         FLAG_ACTIVITY_NEW_TASK or
-                        FLAG_ACTIVITY_NO_HISTORY or
                         FLAG_ACTIVITY_CLEAR_TASK
             )
             startActivity(this)

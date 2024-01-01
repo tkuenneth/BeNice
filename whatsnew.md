@@ -1,4 +1,4 @@
 # What's new
 
-- To make activity starts more reliable, the launch mechanism was split; 
-  unfortunately you need to re-create pinned links
+- Launched apps are now put on the back stack; going back to the bottom of 
+  the back stack now reliably will return to the home screen
