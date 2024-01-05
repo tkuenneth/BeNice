@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -37,7 +38,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BeNiceScreen(
     state: BeNiceScreenUiState,
@@ -47,14 +48,14 @@ fun BeNiceScreen(
     modifier: Modifier
 ) {
     var contextMenuAppInfo by rememberSaveable { mutableStateOf<AppInfo?>(null) }
-    val haptics = LocalHapticFeedback.current
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
-    val closeSheet = {
+    val closeSheet: (() -> Unit) -> Unit = { callback ->
         scope.launch { sheetState.hide() }.invokeOnCompletion {
             if (!sheetState.isVisible) {
                 contextMenuAppInfo = null
             }
+            callback()
         }
     }
     Box(
@@ -64,92 +65,92 @@ fun BeNiceScreen(
     {
         when (state.isLoading) {
             true -> CircularProgressIndicator()
-            false -> {
-                if (state.installedApps.isEmpty()) {
-                    Text(
-                        text = stringResource(
-                            id = if (state.filterOn) {
-                                R.string.no_portrait_apps
-                            } else {
-                                R.string.no_apps
-                            }
-                        ),
-                        style = MaterialTheme.typography.displaySmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        textAlign = TextAlign.Center
-                    )
-                } else {
-                    LazyVerticalGrid(
-                        modifier = Modifier.align(Alignment.TopStart),
-                        columns = GridCells.Fixed(count = 2)
-                    ) {
-                        state.installedApps.forEach { appInfo ->
-                            item {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .combinedClickable(
-                                            onClick = { onClick(appInfo) },
-                                            onLongClick = {
-                                                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                                                contextMenuAppInfo = appInfo
-                                            },
-                                            onLongClickLabel = stringResource(id = R.string.open_context_menu)
-                                        )
-                                        .padding(horizontal = 24.dp, vertical = 16.dp),
-                                    horizontalArrangement = Arrangement.Start,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    AppIconImage(drawable = appInfo.icon)
-                                    Spacer(modifier = Modifier.width(16.dp))
-                                    Text(
-                                        text = appInfo.label,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                            }
-                        }
-                    }
+            false -> AppChooser(
+                state = state,
+                onClick = onClick,
+                onLongClick = { appInfo ->
+                    contextMenuAppInfo = appInfo
                 }
-            }
+            )
         }
-        if (contextMenuAppInfo != null) {
+        contextMenuAppInfo?.let {
             ModalBottomSheet(
                 onDismissRequest = { contextMenuAppInfo = null },
                 sheetState = sheetState,
                 windowInsets = WindowInsets(0),
             ) {
                 MenuItem(
-                    onClick = {
-                        contextMenuAppInfo?.let {
-                            onClick(it)
-                        }
-                        closeSheet()
-                    },
+                    onClick = { closeSheet { onClick(it) } },
                     imageVector = Icons.Default.Launch,
                     textRes = R.string.launch
                 )
                 MenuItem(
-                    onClick = {
-                        contextMenuAppInfo?.let {
-                            onOpenAppInfoClicked(it)
-                        }
-                        closeSheet()
-                    },
+                    onClick = { closeSheet { onOpenAppInfoClicked(it) } },
                     imageVector = Icons.Default.Info,
                     textRes = R.string.open_app_info
                 )
                 MenuItem(
-                    onClick = {
-                        contextMenuAppInfo?.let {
-                            onAddLinkClicked(it)
-                        }
-                        closeSheet()
-                    },
+                    onClick = { closeSheet { onAddLinkClicked(it) } },
                     imageVector = Icons.Default.AddLink,
                     textRes = R.string.add_link
                 )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun AppChooser(
+    state: BeNiceScreenUiState,
+    onClick: (AppInfo) -> Unit,
+    onLongClick: (AppInfo) -> Unit
+) {
+    val haptics = LocalHapticFeedback.current
+    if (state.installedApps.isEmpty()) {
+        Text(
+            text = stringResource(
+                id = if (state.filterOn) {
+                    R.string.no_portrait_apps
+                } else {
+                    R.string.no_apps
+                }
+            ),
+            style = MaterialTheme.typography.displaySmall,
+            color = MaterialTheme.colorScheme.primary,
+            textAlign = TextAlign.Center
+        )
+    } else {
+        LazyVerticalGrid(
+            modifier = Modifier.fillMaxSize(),
+            columns = GridCells.Fixed(count = 2)
+        ) {
+            state.installedApps.forEach { appInfo ->
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .combinedClickable(
+                                onClick = { onClick(appInfo) },
+                                onLongClick = {
+                                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onLongClick(appInfo)
+                                },
+                                onLongClickLabel = stringResource(id = R.string.open_context_menu)
+                            )
+                            .padding(horizontal = 24.dp, vertical = 16.dp),
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        AppIconImage(drawable = appInfo.icon)
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = appInfo.label,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
             }
         }
     }
