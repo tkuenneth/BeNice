@@ -32,14 +32,15 @@ class BeNiceActivity : ComponentActivity() {
         }, 500L)
     }
 
-    private fun launchApp(intent: Intent) {
+    private fun launchApp(intent: Intent, launchAdjacent: Boolean = true) {
         lifecycleScope.launch {
             if (ACTION_LAUNCH_APP == intent.action) {
                 intent.getStringExtra(PACKAGE_NAME)?.let { packageName ->
                     intent.getStringExtra(CLASS_NAME)?.let { className ->
                         launchApp(
                             packageName = packageName,
-                            className = className
+                            className = className,
+                            launchAdjacent = launchAdjacent
                         )
                     }
                 }
@@ -48,17 +49,23 @@ class BeNiceActivity : ComponentActivity() {
     }
 }
 
-fun Context.launchApp(packageName: String, className: String) {
+fun Context.launchApp(
+    packageName: String,
+    className: String,
+    launchAdjacent: Boolean
+) {
     Intent().run {
         component = ComponentName(
             packageName,
             className
         )
-        addFlags(
-            FLAG_ACTIVITY_LAUNCH_ADJACENT or
-                    FLAG_ACTIVITY_NEW_TASK or
-                    FLAG_ACTIVITY_TASK_ON_HOME
-        )
+        addFlags(FLAG_ACTIVITY_NEW_TASK)
+        if (launchAdjacent) {
+            addFlags(
+                FLAG_ACTIVITY_LAUNCH_ADJACENT or
+                        FLAG_ACTIVITY_TASK_ON_HOME
+            )
+        }
         startActivity(this)
     }
 }

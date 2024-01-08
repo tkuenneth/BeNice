@@ -108,7 +108,11 @@ class AppChooserActivity : ComponentActivity() {
 
     private fun onClick(appInfo: AppInfo) {
         with(appInfo) {
-            launchApp(packageName = packageName, className = className)
+            launchApp(
+                packageName = packageName,
+                className = className,
+                launchAdjacent = true
+            )
         }
     }
 
