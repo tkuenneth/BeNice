@@ -35,6 +35,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -102,16 +103,9 @@ class AppChooserActivity : ComponentActivity() {
                                         }
                                     )
                                 )
-                                IconButtonWithTooltip(
-                                    onClick = { moreOpen = true },
-                                    imageVector = Icons.Default.MoreVert,
-                                    contentDescription = stringResource(id = R.string.more_vert)
-                                )
-                                DropdownMenu(
-                                    expanded = moreOpen,
-                                    onDismissRequest = { moreOpen = false }
-                                ) {
-                                    if (windowSizeClass.hasCompactScreen()) {
+                                val menuItems = mutableListOf<@Composable () -> Unit>()
+                                if (windowSizeClass.hasCompactScreen()) {
+                                    menuItems.add {
                                         DropdownMenuItem(
                                             text = {
                                                 Text(
@@ -146,6 +140,19 @@ class AppChooserActivity : ComponentActivity() {
                                                     .apply()
                                                 moreOpen = false
                                             })
+                                    }
+                                }
+                                if (menuItems.isNotEmpty()) {
+                                    IconButtonWithTooltip(
+                                        onClick = { moreOpen = true },
+                                        imageVector = Icons.Default.MoreVert,
+                                        contentDescription = stringResource(id = R.string.more_vert)
+                                    )
+                                    DropdownMenu(
+                                        expanded = moreOpen,
+                                        onDismissRequest = { moreOpen = false }
+                                    ) {
+                                        menuItems.forEach { item -> item() }
                                     }
                                 }
                             }
