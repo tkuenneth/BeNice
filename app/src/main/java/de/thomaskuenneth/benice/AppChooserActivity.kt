@@ -104,7 +104,7 @@ class AppChooserActivity : ComponentActivity() {
                                     )
                                 )
                                 val menuItems = mutableListOf<@Composable () -> Unit>()
-                                if (windowSizeClass.hasCompactScreen()) {
+                                if (!windowSizeClass.hasExpandedScreen()) {
                                     menuItems.add {
                                         DropdownMenuItem(
                                             text = {
@@ -228,7 +228,7 @@ fun shouldLaunchAdjacent(
     prefs: SharedPreferences,
     windowSizeClass: WindowSizeClass
 ) = prefs.getBoolean(PREFS_LAUNCH_ADJACENT, true) ||
-        !windowSizeClass.hasCompactScreen()
+        windowSizeClass.hasExpandedScreen()
 
-private fun WindowSizeClass.hasCompactScreen() =
-    windowWidthSizeClass == WindowWidthSizeClass.COMPACT || windowHeightSizeClass == WindowHeightSizeClass.COMPACT
+private fun WindowSizeClass.hasExpandedScreen() =
+    windowWidthSizeClass == WindowWidthSizeClass.EXPANDED || windowHeightSizeClass == WindowHeightSizeClass.EXPANDED
