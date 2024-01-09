@@ -1,5 +1,6 @@
 package de.thomaskuenneth.benice
 
+import android.app.Activity
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
@@ -34,11 +35,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
-import androidx.compose.material3.windowsizeclass.WindowSizeClass
-import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
-import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -50,9 +46,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.preference.PreferenceManager
+import androidx.window.core.layout.WindowHeightSizeClass
+import androidx.window.core.layout.WindowSizeClass
+import androidx.window.core.layout.WindowWidthSizeClass
+import androidx.window.layout.WindowMetricsCalculator
 
 private const val PREFS_FILTER_ON = "filterOn"
-private const val PREFS_ALWAYS_OPEN_ADJACENT = "alwaysOpenAdjacent"
+private const val PREFS_LAUNCH_ADJACENT = "launchAdjacent"
 
 class AppChooserActivity : ComponentActivity() {
 
@@ -60,7 +60,7 @@ class AppChooserActivity : ComponentActivity() {
     private lateinit var prefs: SharedPreferences
     private lateinit var windowSizeClass: WindowSizeClass
 
-    @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         shortcutManager = getSystemService(ShortcutManager::class.java)
@@ -68,12 +68,12 @@ class AppChooserActivity : ComponentActivity() {
         enableEdgeToEdge()
         val viewModel by viewModels<BeNiceViewModel>()
         viewModel.setFilterOn(prefs.getBoolean(PREFS_FILTER_ON, true))
-        viewModel.setAlwaysOpenAdjacent(prefs.getBoolean(PREFS_ALWAYS_OPEN_ADJACENT, true))
+        viewModel.setLaunchAdjacent(prefs.getBoolean(PREFS_LAUNCH_ADJACENT, true))
+        windowSizeClass = computeWindowSizeClass()
         setContent {
             MaterialTheme(
                 colorScheme = defaultColorScheme()
             ) {
-                windowSizeClass = calculateWindowSizeClass(this)
                 val state by viewModel.uiState.collectAsState()
                 val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
                 Scaffold(
@@ -111,15 +111,15 @@ class AppChooserActivity : ComponentActivity() {
                                     expanded = moreOpen,
                                     onDismissRequest = { moreOpen = false }
                                 ) {
-                                    if (!windowSizeClass.hasLargeScreen()) {
+                                    if (windowSizeClass.hasCompactScreen()) {
                                         DropdownMenuItem(
                                             text = {
                                                 Text(
-                                                    text = stringResource(id = R.string.always_launch_adjacent)
+                                                    text = stringResource(id = R.string.launch_adjacent)
                                                 )
                                             },
                                             leadingIcon = {
-                                                val checked = state.alwaysOpenAdjacent
+                                                val checked = state.launchAdjacent
                                                 Icon(
                                                     imageVector = if (checked) {
                                                         Icons.Default.CheckBox
@@ -136,11 +136,11 @@ class AppChooserActivity : ComponentActivity() {
                                                 )
                                             },
                                             onClick = {
-                                                val newValue = !state.alwaysOpenAdjacent
-                                                viewModel.setAlwaysOpenAdjacent(newValue)
+                                                val newValue = !state.launchAdjacent
+                                                viewModel.setLaunchAdjacent(newValue)
                                                 prefs.edit()
                                                     .putBoolean(
-                                                        PREFS_ALWAYS_OPEN_ADJACENT,
+                                                        PREFS_LAUNCH_ADJACENT,
                                                         newValue
                                                     )
                                                     .apply()
@@ -156,6 +156,7 @@ class AppChooserActivity : ComponentActivity() {
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
                 ) { paddingValues ->
                     BeNiceScreen(
+                        windowSizeClass = windowSizeClass,
                         state = state,
                         onClick = ::onClick,
                         onAddLinkClicked = ::onAddLinkClicked,
@@ -208,11 +209,19 @@ class AppChooserActivity : ComponentActivity() {
     }
 }
 
+fun Activity.computeWindowSizeClass(): WindowSizeClass {
+    val metrics = WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(this)
+    val width = metrics.bounds.width()
+    val height = metrics.bounds.height()
+    val density = resources.displayMetrics.density
+    return WindowSizeClass.compute(width / density, height / density)
+}
+
 fun shouldLaunchAdjacent(
     prefs: SharedPreferences,
     windowSizeClass: WindowSizeClass
-) = prefs.getBoolean(PREFS_ALWAYS_OPEN_ADJACENT, true) ||
-        windowSizeClass.hasLargeScreen()
+) = prefs.getBoolean(PREFS_LAUNCH_ADJACENT, true) ||
+        !windowSizeClass.hasCompactScreen()
 
-private fun WindowSizeClass.hasLargeScreen() =
-    widthSizeClass != WindowWidthSizeClass.Compact && heightSizeClass != WindowHeightSizeClass.Compact
+private fun WindowSizeClass.hasCompactScreen() =
+    windowWidthSizeClass == WindowWidthSizeClass.COMPACT || windowHeightSizeClass == WindowHeightSizeClass.COMPACT
