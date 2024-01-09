@@ -1,4 +1,4 @@
 # What's new
 
-- Launched apps are now put on the back stack; going back to the bottom of 
-  the back stack now reliably will return to the home screen
+- On compact screens, you can decide whether to launch apps adjacent or not
+- The app chooser uses three columns on large screens

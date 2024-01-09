@@ -36,11 +36,14 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
+import androidx.window.core.layout.WindowWidthSizeClass
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BeNiceScreen(
+    windowSizeClass: WindowSizeClass,
     state: BeNiceScreenUiState,
     onClick: (AppInfo) -> Unit,
     onAddLinkClicked: (AppInfo) -> Unit,
@@ -67,6 +70,11 @@ fun BeNiceScreen(
             true -> CircularProgressIndicator()
             false -> AppChooser(
                 state = state,
+                columns = when (windowSizeClass.windowWidthSizeClass) {
+                    WindowWidthSizeClass.MEDIUM -> 2
+                    WindowWidthSizeClass.EXPANDED -> 3
+                    else -> 1
+                },
                 onClick = onClick,
                 onLongClick = { appInfo ->
                     contextMenuAppInfo = appInfo
@@ -103,12 +111,16 @@ fun BeNiceScreen(
 @Composable
 fun AppChooser(
     state: BeNiceScreenUiState,
+    columns: Int,
     onClick: (AppInfo) -> Unit,
     onLongClick: (AppInfo) -> Unit
 ) {
     val haptics = LocalHapticFeedback.current
     if (state.installedApps.isEmpty()) {
         Text(
+            modifier = Modifier
+                .width(600.dp)
+                .padding(horizontal = 16.dp),
             text = stringResource(
                 id = if (state.filterOn) {
                     R.string.no_portrait_apps
@@ -118,12 +130,12 @@ fun AppChooser(
             ),
             style = MaterialTheme.typography.displaySmall,
             color = MaterialTheme.colorScheme.primary,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Start
         )
     } else {
         LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(),
-            columns = GridCells.Fixed(count = 2)
+            columns = GridCells.Fixed(count = columns)
         ) {
             state.installedApps.forEach { appInfo ->
                 item {

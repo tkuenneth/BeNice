@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 
 data class BeNiceScreenUiState(
     val filterOn: Boolean = false,
+    val launchAdjacent: Boolean = false,
     val isLoading: Boolean = false,
     val installedApps: List<AppInfo> = emptyList()
 )
@@ -30,6 +31,14 @@ class BeNiceViewModel : ViewModel() {
             )
         }
         updateInstalledApps()
+    }
+
+    fun setLaunchAdjacent(launchAdjacent: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                launchAdjacent = launchAdjacent
+            )
+        }
     }
 
     fun queryInstalledApps(packageManager: PackageManager) {
