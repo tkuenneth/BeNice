@@ -20,16 +20,30 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.FilterAltOff
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
@@ -38,13 +52,15 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.preference.PreferenceManager
 
 private const val PREFS_FILTER_ON = "filterOn"
+private const val PREFS_ALWAYS_OPEN_ADJACENT = "alwaysOpenAdjacent"
 
 class AppChooserActivity : ComponentActivity() {
 
     private lateinit var shortcutManager: ShortcutManager
     private lateinit var prefs: SharedPreferences
+    private lateinit var windowSizeClass: WindowSizeClass
 
-    @OptIn(ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         shortcutManager = getSystemService(ShortcutManager::class.java)
@@ -52,14 +68,17 @@ class AppChooserActivity : ComponentActivity() {
         enableEdgeToEdge()
         val viewModel by viewModels<BeNiceViewModel>()
         viewModel.setFilterOn(prefs.getBoolean(PREFS_FILTER_ON, true))
+        viewModel.setAlwaysOpenAdjacent(prefs.getBoolean(PREFS_ALWAYS_OPEN_ADJACENT, true))
         setContent {
             MaterialTheme(
                 colorScheme = defaultColorScheme()
             ) {
+                windowSizeClass = calculateWindowSizeClass(this)
                 val state by viewModel.uiState.collectAsState()
                 val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
                 Scaffold(
                     topBar = {
+                        var moreOpen by remember { mutableStateOf(false) }
                         TopAppBar(
                             title = { Text(text = stringResource(id = R.string.app_name)) },
                             scrollBehavior = scrollBehavior,
@@ -83,6 +102,52 @@ class AppChooserActivity : ComponentActivity() {
                                         }
                                     )
                                 )
+                                IconButtonWithTooltip(
+                                    onClick = { moreOpen = true },
+                                    imageVector = Icons.Default.MoreVert,
+                                    contentDescription = stringResource(id = R.string.more_vert)
+                                )
+                                DropdownMenu(
+                                    expanded = moreOpen,
+                                    onDismissRequest = { moreOpen = false }
+                                ) {
+                                    if (!windowSizeClass.hasLargeScreen()) {
+                                        DropdownMenuItem(
+                                            text = {
+                                                Text(
+                                                    text = stringResource(id = R.string.always_launch_adjacent)
+                                                )
+                                            },
+                                            leadingIcon = {
+                                                val checked = state.alwaysOpenAdjacent
+                                                Icon(
+                                                    imageVector = if (checked) {
+                                                        Icons.Default.CheckBox
+                                                    } else {
+                                                        Icons.Default.CheckBoxOutlineBlank
+                                                    },
+                                                    contentDescription = stringResource(
+                                                        id = if (checked) {
+                                                            R.string.checked
+                                                        } else {
+                                                            R.string.not_checked
+                                                        }
+                                                    )
+                                                )
+                                            },
+                                            onClick = {
+                                                val newValue = !state.alwaysOpenAdjacent
+                                                viewModel.setAlwaysOpenAdjacent(newValue)
+                                                prefs.edit()
+                                                    .putBoolean(
+                                                        PREFS_ALWAYS_OPEN_ADJACENT,
+                                                        newValue
+                                                    )
+                                                    .apply()
+                                                moreOpen = false
+                                            })
+                                    }
+                                }
                             }
                         )
                     },
@@ -111,7 +176,10 @@ class AppChooserActivity : ComponentActivity() {
             launchApp(
                 packageName = packageName,
                 className = className,
-                launchAdjacent = true
+                launchAdjacent = shouldLaunchAdjacent(
+                    prefs = prefs,
+                    windowSizeClass = windowSizeClass
+                )
             )
         }
     }
@@ -139,3 +207,12 @@ class AppChooserActivity : ComponentActivity() {
         }
     }
 }
+
+fun shouldLaunchAdjacent(
+    prefs: SharedPreferences,
+    windowSizeClass: WindowSizeClass
+) = prefs.getBoolean(PREFS_ALWAYS_OPEN_ADJACENT, true) ||
+        windowSizeClass.hasLargeScreen()
+
+private fun WindowSizeClass.hasLargeScreen() =
+    widthSizeClass != WindowWidthSizeClass.Compact && heightSizeClass != WindowHeightSizeClass.Compact

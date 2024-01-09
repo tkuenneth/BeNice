@@ -3,9 +3,13 @@
     <string name="open_context_menu">Opens a context menu</string>
     <string name="launch">Launch</string>
     <string name="add_link">Add link</string>
-    <string name="no_portrait_apps">No apps found that would like to have the screen in a portrait orientation</string>
+    <string name="no_portrait_apps">No apps found that would like to have the screen in a portrait orientation. Click on the filter icon to show all apps.</string>
     <string name="filter_on">Filter is on</string>
     <string name="filter_off">Filter is off</string>
     <string name="no_apps">No apps found</string>
     <string name="open_app_info">Open app info</string>
+    <string name="always_launch_adjacent">Always launch adjacent</string>
+    <string name="more_vert">Options menu</string>
+    <string name="checked">checked</string>
+    <string name="not_checked">not checked</string>
 </resources>

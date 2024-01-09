@@ -109,6 +109,9 @@ fun AppChooser(
     val haptics = LocalHapticFeedback.current
     if (state.installedApps.isEmpty()) {
         Text(
+            modifier = Modifier
+                .width(600.dp)
+                .padding(horizontal = 16.dp),
             text = stringResource(
                 id = if (state.filterOn) {
                     R.string.no_portrait_apps
@@ -118,7 +121,7 @@ fun AppChooser(
             ),
             style = MaterialTheme.typography.displaySmall,
             color = MaterialTheme.colorScheme.primary,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Start
         )
     } else {
         LazyVerticalGrid(
