@@ -179,12 +179,12 @@ class AppChooserActivity : ComponentActivity() {
         viewModel.queryInstalledApps(packageManager)
     }
 
-    private fun onClick(appInfo: AppInfo) {
+    private fun onClick(appInfo: AppInfo, forceLaunchAdjacent: Boolean) {
         with(appInfo) {
             launchApp(
                 packageName = packageName,
                 className = className,
-                launchAdjacent = shouldLaunchAdjacent(
+                launchAdjacent = forceLaunchAdjacent || shouldLaunchAdjacent(
                     prefs = prefs,
                     windowSizeClass = windowSizeClass
                 )

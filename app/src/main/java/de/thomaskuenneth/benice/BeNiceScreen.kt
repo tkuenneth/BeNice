@@ -31,9 +31,11 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
@@ -45,7 +47,7 @@ import kotlinx.coroutines.launch
 fun BeNiceScreen(
     windowSizeClass: WindowSizeClass,
     state: BeNiceScreenUiState,
-    onClick: (AppInfo) -> Unit,
+    onClick: (AppInfo, Boolean) -> Unit,
     onAddLinkClicked: (AppInfo) -> Unit,
     onOpenAppInfoClicked: (AppInfo) -> Unit,
     modifier: Modifier
@@ -88,10 +90,17 @@ fun BeNiceScreen(
                 windowInsets = WindowInsets(0),
             ) {
                 MenuItem(
-                    onClick = { closeSheet { onClick(it) } },
+                    onClick = { closeSheet { onClick(it, false) } },
                     imageVector = Icons.Default.Launch,
                     textRes = R.string.launch
                 )
+                if (!state.launchAdjacent) {
+                    MenuItem(
+                        onClick = { closeSheet { onClick(it, true) } },
+                        imageVector = ImageVector.vectorResource(id = R.drawable.launch_adjacent),
+                        textRes = R.string.launch_adjacent
+                    )
+                }
                 MenuItem(
                     onClick = { closeSheet { onOpenAppInfoClicked(it) } },
                     imageVector = Icons.Default.Info,
@@ -112,7 +121,7 @@ fun BeNiceScreen(
 fun AppChooser(
     state: BeNiceScreenUiState,
     columns: Int,
-    onClick: (AppInfo) -> Unit,
+    onClick: (AppInfo, Boolean) -> Unit,
     onLongClick: (AppInfo) -> Unit
 ) {
     val haptics = LocalHapticFeedback.current
@@ -143,7 +152,7 @@ fun AppChooser(
                         modifier = Modifier
                             .fillMaxWidth()
                             .combinedClickable(
-                                onClick = { onClick(appInfo) },
+                                onClick = { onClick(appInfo, false) },
                                 onLongClick = {
                                     haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                                     onLongClick(appInfo)
