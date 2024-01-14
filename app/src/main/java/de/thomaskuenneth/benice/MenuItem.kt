@@ -6,9 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -36,7 +34,6 @@ fun MenuItem(
             .padding(all = 16.dp)
     ) {
         Image(
-            modifier = Modifier.size(24.dp),
             imageVector = imageVector,
             contentDescription = null,
             colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary)
