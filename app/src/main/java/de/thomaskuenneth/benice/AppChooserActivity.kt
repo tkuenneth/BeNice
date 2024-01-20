@@ -8,6 +8,10 @@ import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.SharedPreferences
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.Bundle
@@ -168,6 +172,7 @@ class AppChooserActivity : ComponentActivity() {
                         onClick = ::onClick,
                         onAddLinkClicked = ::onAddLinkClicked,
                         onOpenAppInfoClicked = ::onOpenAppInfoClicked,
+                        onAppsForAppPairSelected = ::onAppsForAppPairSelected,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(paddingValues = paddingValues)
@@ -214,6 +219,55 @@ class AppChooserActivity : ComponentActivity() {
             startActivity(this)
         }
     }
+
+    private fun onAppsForAppPairSelected(firstApp: AppInfo, secondApp: AppInfo) {
+        if (shortcutManager.isRequestPinShortcutSupported) {
+            val id = "${firstApp.className}|${secondApp.className}"
+            val label = "${firstApp.label} \u2011 ${secondApp.label}"
+            val shortcutInfo = ShortcutInfo.Builder(this, id)
+                .setIcon(
+                    Icon.createWithBitmap(
+                        createAppPairBitmap(
+                            firstApp = firstApp,
+                            secondApp = secondApp
+                        )
+                    )
+                )
+                .setShortLabel(label)
+                .setIntent(createLaunchAppPairIntent(firstApp, secondApp))
+                .build()
+            shortcutManager.requestPinShortcut(shortcutInfo, null)
+        }
+    }
+}
+
+fun createAppPairBitmap(
+    firstApp: AppInfo,
+    secondApp: AppInfo
+): Bitmap {
+    val bigWidth = 512
+    val bigHeight = 512
+    val smallWidth = bigWidth / 2
+    val smallHeight = bigHeight / 2
+    val y = smallHeight / 2F
+    return Bitmap.createBitmap(bigWidth, bigHeight, Bitmap.Config.ARGB_8888).also { bitmap ->
+        val bitmapPaint = Paint().also { paint ->
+            paint.isAntiAlias = true
+            paint.isFilterBitmap = true
+        }
+        Canvas(bitmap).run {
+            drawPaint(Paint().also {
+                it.color = Color.TRANSPARENT
+            })
+            drawBitmap(firstApp.icon.toBitmap(smallWidth, smallHeight), 0F, y, bitmapPaint)
+            drawBitmap(
+                secondApp.icon.toBitmap(smallWidth, smallHeight),
+                smallWidth.toFloat(),
+                y,
+                bitmapPaint
+            )
+        }
+    }
 }
 
 fun Activity.computeWindowSizeClass(): WindowSizeClass {
@@ -230,5 +284,5 @@ fun shouldLaunchAdjacent(
 ) = prefs.getBoolean(PREFS_LAUNCH_ADJACENT, true) ||
         windowSizeClass.hasExpandedScreen()
 
-private fun WindowSizeClass.hasExpandedScreen() =
+fun WindowSizeClass.hasExpandedScreen() =
     windowWidthSizeClass == WindowWidthSizeClass.EXPANDED || windowHeightSizeClass == WindowHeightSizeClass.EXPANDED

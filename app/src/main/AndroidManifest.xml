@@ -32,6 +32,9 @@
             <intent-filter>
                 <action android:name="de.thomaskuenneth.benice.intent.action.ACTION_LAUNCH_APP" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="de.thomaskuenneth.benice.intent.action.ACTION_LAUNCH_APP_PAIR" />
+            </intent-filter>
         </activity>
 
     </application>
