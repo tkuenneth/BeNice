@@ -15,8 +15,9 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun AppIconImage(drawable: Drawable) {
+    val normalize: (Int) -> Int = { if (it < 108 || it > 512) 108 else it }
     val bitmap = Bitmap.createBitmap(
-        drawable.intrinsicWidth, drawable.intrinsicHeight,
+        normalize(drawable.intrinsicWidth), normalize(drawable.intrinsicHeight),
         Bitmap.Config.ARGB_8888
     )
     val canvas = Canvas(bitmap)
