@@ -10,6 +10,6 @@ A long tap opens a sheet which allows you to add a link. Doing so will create a 
 
 **Download now!**
 
-<a href='https://play.google.com/store/apps/details?id=de.thomaskuenneth.benice&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img height="48px" alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png'/></a>
+<a href='https://play.google.com/store/apps/details?id=de.thomaskuenneth.benice&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img width="160px" alt='Get it on Google Play' src='https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png'/></a>
 
 <em>Google Play and the Google Play logo are trademarks of Google LLC.</em>
