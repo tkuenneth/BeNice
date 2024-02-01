@@ -23,8 +23,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
-import androidx.compose.material.icons.filled.FilterAlt
-import androidx.compose.material.icons.filled.FilterAltOff
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -52,7 +50,6 @@ import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import androidx.window.layout.WindowMetricsCalculator
 
-private const val PREFS_FILTER_ON = "filterOn"
 private const val PREFS_LAUNCH_ADJACENT = "launchAdjacent"
 
 class AppChooserActivity : ComponentActivity() {
@@ -68,7 +65,6 @@ class AppChooserActivity : ComponentActivity() {
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
         enableEdgeToEdge()
         val viewModel by viewModels<BeNiceViewModel>()
-        viewModel.setFilterOn(prefs.getBoolean(PREFS_FILTER_ON, true))
         viewModel.setLaunchAdjacent(prefs.getBoolean(PREFS_LAUNCH_ADJACENT, true))
         windowSizeClass = computeWindowSizeClass()
         setContent {
@@ -84,25 +80,6 @@ class AppChooserActivity : ComponentActivity() {
                             title = { Text(text = stringResource(id = R.string.app_name)) },
                             scrollBehavior = scrollBehavior,
                             actions = {
-                                IconButtonWithTooltip(
-                                    onClick = {
-                                        val newValue = !state.filterOn
-                                        viewModel.setFilterOn(newValue)
-                                        prefs.edit().putBoolean(PREFS_FILTER_ON, newValue).apply()
-                                    },
-                                    imageVector = if (state.filterOn) {
-                                        Icons.Default.FilterAlt
-                                    } else {
-                                        Icons.Default.FilterAltOff
-                                    },
-                                    contentDescription = stringResource(
-                                        id = if (state.filterOn) {
-                                            R.string.filter_on
-                                        } else {
-                                            R.string.filter_off
-                                        }
-                                    )
-                                )
                                 val menuItems = mutableListOf<@Composable () -> Unit>()
                                 if (!windowSizeClass.hasExpandedScreen()) {
                                     menuItems.add {
