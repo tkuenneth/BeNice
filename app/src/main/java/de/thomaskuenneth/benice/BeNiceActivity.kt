@@ -18,27 +18,58 @@ private const val ACTION_LAUNCH_APP = "de.thomaskuenneth.benice.intent.action.AC
 private const val PACKAGE_NAME = "packageName"
 private const val CLASS_NAME = "className"
 
+private const val ACTION_LAUNCH_APP_PAIR =
+    "de.thomaskuenneth.benice.intent.action.ACTION_LAUNCH_APP_PAIR"
+private const val PACKAGE_NAME_FIRST_APP = "packageNameFirstApp"
+private const val CLASS_NAME_FIRST_APP = "classNameFirstApp"
+private const val PACKAGE_NAME_SECOND_APP = "packageNameSecondApp"
+private const val CLASS_NAME_SECOND_APP = "classNameSecondApp"
+
 class BeNiceActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        val launchAdjacent = shouldLaunchAdjacent(
-            prefs = PreferenceManager.getDefaultSharedPreferences(this),
-            windowSizeClass = computeWindowSizeClass()
-        )
-        if (launchAdjacent) {
-            Intent(this, AppChooserActivity::class.java).run {
-                addFlags(FLAG_ACTIVITY_NEW_TASK)
-                startActivity(this)
+        if (intent?.action == ACTION_LAUNCH_APP_PAIR) {
+            val firstPackageName = intent.getStringExtra(PACKAGE_NAME_FIRST_APP)
+            val firstClassName = intent.getStringExtra(CLASS_NAME_FIRST_APP)
+            val secondPackageName = intent.getStringExtra(PACKAGE_NAME_SECOND_APP)
+            val secondClassName = intent.getStringExtra(CLASS_NAME_SECOND_APP)
+            if (firstPackageName != null && firstClassName != null &&
+                secondPackageName != null && secondClassName != null
+            ) {
+                launchApp(
+                    packageName = firstPackageName,
+                    className = firstClassName,
+                    false
+                )
+                Handler(Looper.getMainLooper()).postDelayed({
+                    launchApp(
+                        packageName = secondPackageName,
+                        className = secondClassName,
+                        true
+                    )
+                    finish()
+                }, 500L)
             }
-        }
-        Handler(Looper.getMainLooper()).postDelayed({
-            launchApp(
-                intent = intent,
-                launchAdjacent = launchAdjacent
+        } else {
+            val launchAdjacent = shouldLaunchAdjacent(
+                prefs = PreferenceManager.getDefaultSharedPreferences(this),
+                windowSizeClass = computeWindowSizeClass()
             )
-            finish()
-        }, if (launchAdjacent) 500L else 0L)
+            if (launchAdjacent) {
+                Intent(this, AppChooserActivity::class.java).run {
+                    addFlags(FLAG_ACTIVITY_NEW_TASK)
+                    startActivity(this)
+                }
+            }
+            Handler(Looper.getMainLooper()).postDelayed({
+                launchApp(
+                    intent = intent,
+                    launchAdjacent = launchAdjacent
+                )
+                finish()
+            }, if (launchAdjacent) 500L else 0L)
+        }
     }
 
     private fun launchApp(intent: Intent, launchAdjacent: Boolean) {
@@ -88,4 +119,20 @@ fun Context.createBeNiceLaunchIntent(appInfo: AppInfo) =
         )
         intent.putExtra(PACKAGE_NAME, appInfo.packageName)
         intent.putExtra(CLASS_NAME, appInfo.className)
+    }
+
+fun Context.createLaunchAppPairIntent(
+    firstApp: AppInfo,
+    secondApp: AppInfo
+) =
+    Intent(this, BeNiceActivity::class.java).also { intent ->
+        intent.action = ACTION_LAUNCH_APP_PAIR
+        intent.addFlags(
+            FLAG_ACTIVITY_NEW_TASK or
+                    FLAG_ACTIVITY_CLEAR_TASK
+        )
+        intent.putExtra(PACKAGE_NAME_FIRST_APP, firstApp.packageName)
+        intent.putExtra(CLASS_NAME_FIRST_APP, firstApp.className)
+        intent.putExtra(PACKAGE_NAME_SECOND_APP, secondApp.packageName)
+        intent.putExtra(CLASS_NAME_SECOND_APP, secondApp.className)
     }

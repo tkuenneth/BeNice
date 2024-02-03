@@ -9,4 +9,5 @@
     <string name="more_vert">Options menu</string>
     <string name="checked">checked</string>
     <string name="not_checked">not checked</string>
+    <string name="create_app_pair">Create app pair…</string>
 </resources>

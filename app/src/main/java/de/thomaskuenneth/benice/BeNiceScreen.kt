@@ -13,9 +13,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddLink
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Launch
 import androidx.compose.material3.CircularProgressIndicator
@@ -24,13 +26,14 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,6 +44,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import kotlinx.coroutines.launch
@@ -48,16 +52,19 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BeNiceScreen(
-        windowSizeClass: WindowSizeClass,
-        state: BeNiceScreenUiState,
-        onClick: (AppInfo, Boolean) -> Unit,
-        onAddLinkClicked: (AppInfo) -> Unit,
-        onOpenAppInfoClicked: (AppInfo) -> Unit,
-        modifier: Modifier
+    windowSizeClass: WindowSizeClass,
+    state: BeNiceScreenUiState,
+    onClick: (AppInfo, Boolean) -> Unit,
+    onAddLinkClicked: (AppInfo) -> Unit,
+    onOpenAppInfoClicked: (AppInfo) -> Unit,
+    onAppsForAppPairSelected: (AppInfo, AppInfo) -> Unit,
+    modifier: Modifier
 ) {
-    var contextMenuAppInfo by rememberSaveable { mutableStateOf<AppInfo?>(null) }
+    var contextMenuAppInfo by remember { mutableStateOf<AppInfo?>(null) }
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
+    var showSelectSecondAppDialog by remember { mutableStateOf(false) }
+    var firstApp by remember { mutableStateOf<AppInfo?>(null) }
     val closeSheet: (() -> Unit) -> Unit = { callback ->
         scope.launch { sheetState.hide() }.invokeOnCompletion {
             if (!sheetState.isVisible) {
@@ -106,7 +113,7 @@ fun BeNiceScreen(
                         imageVector = Icons.Default.Launch,
                         textRes = R.string.launch
                 )
-                if (!state.launchAdjacent) {
+                if (!state.launchAdjacent && !windowSizeClass.hasExpandedScreen()) {
                     MenuItem(
                             onClick = { closeSheet { onClick(it, true) } },
                             imageVector = ImageVector.vectorResource(id = R.drawable.launch_adjacent),
@@ -122,6 +129,44 @@ fun BeNiceScreen(
                         onClick = { closeSheet { onAddLinkClicked(it) } },
                         imageVector = Icons.Default.AddLink,
                         textRes = R.string.add_link
+                )
+                MenuItem(
+                    onClick = {
+                        closeSheet {
+                            firstApp = it
+                            showSelectSecondAppDialog = true
+                        }
+                    },
+                    imageVector = Icons.Default.Create,
+                    textRes = R.string.create_app_pair
+                )
+            }
+        }
+    }
+    if (showSelectSecondAppDialog) {
+        Dialog(
+            onDismissRequest = {
+                showSelectSecondAppDialog = false
+            }
+        ) {
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                shadowElevation = 4.dp,
+                shape = RoundedCornerShape(size = 12.dp)
+            ) {
+                AppChooser(
+                    state = state,
+                    columns = 1,
+                    onClick = { secondApp, _ ->
+                        showSelectSecondAppDialog = false
+                        firstApp?.let {
+                            onAppsForAppPairSelected(
+                                it,
+                                secondApp
+                            )
+                        }
+                    },
+                    onLongClick = {}
                 )
             }
         }
