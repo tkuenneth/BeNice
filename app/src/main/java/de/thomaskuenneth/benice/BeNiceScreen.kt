@@ -14,11 +14,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddLink
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Launch
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -70,18 +73,27 @@ fun BeNiceScreen(
     {
         when (state.isLoading) {
             true -> CircularProgressIndicator()
-            false -> AppChooser(
-                    state = state,
-                    columns = when (windowSizeClass.windowWidthSizeClass) {
-                        WindowWidthSizeClass.MEDIUM -> 2
-                        WindowWidthSizeClass.EXPANDED -> 3
-                        else -> 1
-                    },
-                    onClick = onClick,
-                    onLongClick = { appInfo ->
-                        contextMenuAppInfo = appInfo
-                    }
-            )
+            false -> {
+                AppChooser(
+                        state = state,
+                        columns = when (windowSizeClass.windowWidthSizeClass) {
+                            WindowWidthSizeClass.MEDIUM -> 2
+                            WindowWidthSizeClass.EXPANDED -> 3
+                            else -> 1
+                        },
+                        onClick = onClick,
+                        onLongClick = { appInfo ->
+                            contextMenuAppInfo = appInfo
+                        }
+                )
+                FloatingActionButton(
+                        onClick = { },
+                        modifier = Modifier.align(alignment = Alignment.BottomEnd)
+                                .padding(end = 16.dp, bottom = 16.dp)
+                ) {
+                    Icon(Icons.Default.Add, "Floating action button.")
+                }
+            }
         }
         contextMenuAppInfo?.let {
             ModalBottomSheet(
