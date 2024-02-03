@@ -45,12 +45,12 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BeNiceScreen(
-    windowSizeClass: WindowSizeClass,
-    state: BeNiceScreenUiState,
-    onClick: (AppInfo, Boolean) -> Unit,
-    onAddLinkClicked: (AppInfo) -> Unit,
-    onOpenAppInfoClicked: (AppInfo) -> Unit,
-    modifier: Modifier
+        windowSizeClass: WindowSizeClass,
+        state: BeNiceScreenUiState,
+        onClick: (AppInfo, Boolean) -> Unit,
+        onAddLinkClicked: (AppInfo) -> Unit,
+        onOpenAppInfoClicked: (AppInfo) -> Unit,
+        modifier: Modifier
 ) {
     var contextMenuAppInfo by rememberSaveable { mutableStateOf<AppInfo?>(null) }
     val sheetState = rememberModalBottomSheetState()
@@ -64,52 +64,52 @@ fun BeNiceScreen(
         }
     }
     Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
+            modifier = modifier,
+            contentAlignment = Alignment.Center
     )
     {
         when (state.isLoading) {
             true -> CircularProgressIndicator()
             false -> AppChooser(
-                state = state,
-                columns = when (windowSizeClass.windowWidthSizeClass) {
-                    WindowWidthSizeClass.MEDIUM -> 2
-                    WindowWidthSizeClass.EXPANDED -> 3
-                    else -> 1
-                },
-                onClick = onClick,
-                onLongClick = { appInfo ->
-                    contextMenuAppInfo = appInfo
-                }
+                    state = state,
+                    columns = when (windowSizeClass.windowWidthSizeClass) {
+                        WindowWidthSizeClass.MEDIUM -> 2
+                        WindowWidthSizeClass.EXPANDED -> 3
+                        else -> 1
+                    },
+                    onClick = onClick,
+                    onLongClick = { appInfo ->
+                        contextMenuAppInfo = appInfo
+                    }
             )
         }
         contextMenuAppInfo?.let {
             ModalBottomSheet(
-                onDismissRequest = { contextMenuAppInfo = null },
-                sheetState = sheetState,
-                windowInsets = WindowInsets(0),
+                    onDismissRequest = { contextMenuAppInfo = null },
+                    sheetState = sheetState,
+                    windowInsets = WindowInsets(0),
             ) {
                 MenuItem(
-                    onClick = { closeSheet { onClick(it, false) } },
-                    imageVector = Icons.Default.Launch,
-                    textRes = R.string.launch
+                        onClick = { closeSheet { onClick(it, false) } },
+                        imageVector = Icons.Default.Launch,
+                        textRes = R.string.launch
                 )
                 if (!state.launchAdjacent) {
                     MenuItem(
-                        onClick = { closeSheet { onClick(it, true) } },
-                        imageVector = ImageVector.vectorResource(id = R.drawable.launch_adjacent),
-                        textRes = R.string.launch_adjacent
+                            onClick = { closeSheet { onClick(it, true) } },
+                            imageVector = ImageVector.vectorResource(id = R.drawable.launch_adjacent),
+                            textRes = R.string.launch_adjacent
                     )
                 }
                 MenuItem(
-                    onClick = { closeSheet { onOpenAppInfoClicked(it) } },
-                    imageVector = Icons.Default.Info,
-                    textRes = R.string.open_app_info
+                        onClick = { closeSheet { onOpenAppInfoClicked(it) } },
+                        imageVector = Icons.Default.Info,
+                        textRes = R.string.open_app_info
                 )
                 MenuItem(
-                    onClick = { closeSheet { onAddLinkClicked(it) } },
-                    imageVector = Icons.Default.AddLink,
-                    textRes = R.string.add_link
+                        onClick = { closeSheet { onAddLinkClicked(it) } },
+                        imageVector = Icons.Default.AddLink,
+                        textRes = R.string.add_link
                 )
             }
         }
@@ -119,47 +119,61 @@ fun BeNiceScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AppChooser(
-    state: BeNiceScreenUiState,
-    columns: Int,
-    onClick: (AppInfo, Boolean) -> Unit,
-    onLongClick: (AppInfo) -> Unit
+        state: BeNiceScreenUiState,
+        columns: Int,
+        onClick: (AppInfo, Boolean) -> Unit,
+        onLongClick: (AppInfo) -> Unit
 ) {
     val haptics = LocalHapticFeedback.current
     if (state.installedApps.isEmpty()) {
         Text(
-            text = stringResource(R.string.no_apps),
-            style = MaterialTheme.typography.displaySmall,
-            color = MaterialTheme.colorScheme.primary,
-            textAlign = TextAlign.Start
+                text = stringResource(R.string.no_apps),
+                style = MaterialTheme.typography.displaySmall,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Start
         )
     } else {
         LazyVerticalGrid(
-            modifier = Modifier.fillMaxSize(),
-            columns = GridCells.Fixed(count = columns)
+                modifier = Modifier.fillMaxSize(),
+                columns = GridCells.Fixed(count = columns),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            var last = ""
             state.installedApps.forEach { appInfo ->
+                appInfo.label.substring((0 until 1)).let { current ->
+                    if (current != last) {
+                        last = current
+                        header {
+                            Text(modifier = Modifier.fillMaxWidth(),
+                                    text = current,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.secondary)
+                        }
+                    }
+                }
                 item {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .combinedClickable(
-                                onClick = { onClick(appInfo, false) },
-                                onLongClick = {
-                                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    onLongClick(appInfo)
-                                },
-                                onLongClickLabel = stringResource(id = R.string.open_context_menu)
-                            )
-                            .padding(horizontal = 24.dp, vertical = 16.dp),
-                        horizontalArrangement = Arrangement.Start,
-                        verticalAlignment = Alignment.CenterVertically
+                            modifier = Modifier
+                                    .fillMaxWidth()
+                                    .combinedClickable(
+                                            onClick = { onClick(appInfo, false) },
+                                            onLongClick = {
+                                                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                                onLongClick(appInfo)
+                                            },
+                                            onLongClickLabel = stringResource(id = R.string.open_context_menu)
+                                    )
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.CenterVertically
                     ) {
                         AppIconImage(drawable = appInfo.icon)
                         Spacer(modifier = Modifier.width(16.dp))
                         Text(
-                            text = appInfo.label,
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.primary
+                                text = appInfo.label,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
