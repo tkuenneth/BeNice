@@ -3,6 +3,7 @@ package de.thomaskuenneth.benice
 import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,7 +44,7 @@ class BeNiceViewModel : ViewModel() {
 
     fun queryInstalledApps(packageManager: PackageManager) {
         setLoading(true)
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             installedAppsFlow.value = installedApps(packageManager)
             updateInstalledApps()
             setLoading(false)
