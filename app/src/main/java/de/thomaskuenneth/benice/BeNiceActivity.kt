@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 private const val ACTION_LAUNCH_APP = "de.thomaskuenneth.benice.intent.action.ACTION_LAUNCH_APP"
 private const val PACKAGE_NAME = "packageName"
 private const val CLASS_NAME = "className"
+private const val DELAY = "delay"
 
 private const val ACTION_LAUNCH_APP_PAIR =
     "de.thomaskuenneth.benice.intent.action.ACTION_LAUNCH_APP_PAIR"
@@ -34,6 +35,7 @@ class BeNiceActivity : ComponentActivity() {
             val firstClassName = intent.getStringExtra(CLASS_NAME_FIRST_APP)
             val secondPackageName = intent.getStringExtra(PACKAGE_NAME_SECOND_APP)
             val secondClassName = intent.getStringExtra(CLASS_NAME_SECOND_APP)
+            val delay = intent.getLongExtra(DELAY, 500L)
             if (firstPackageName != null && firstClassName != null &&
                 secondPackageName != null && secondClassName != null
             ) {
@@ -49,7 +51,7 @@ class BeNiceActivity : ComponentActivity() {
                         true
                     )
                     finish()
-                }, 500L)
+                }, delay)
             }
         } else {
             val launchAdjacent = shouldLaunchAdjacent(
@@ -123,7 +125,8 @@ fun Context.createBeNiceLaunchIntent(appInfo: AppInfo) =
 
 fun Context.createLaunchAppPairIntent(
     firstApp: AppInfo,
-    secondApp: AppInfo
+    secondApp: AppInfo,
+    delay: Long
 ) =
     Intent(this, BeNiceActivity::class.java).also { intent ->
         intent.action = ACTION_LAUNCH_APP_PAIR
@@ -135,4 +138,5 @@ fun Context.createLaunchAppPairIntent(
         intent.putExtra(CLASS_NAME_FIRST_APP, firstApp.className)
         intent.putExtra(PACKAGE_NAME_SECOND_APP, secondApp.packageName)
         intent.putExtra(CLASS_NAME_SECOND_APP, secondApp.className)
+        intent.putExtra(DELAY, delay)
     }

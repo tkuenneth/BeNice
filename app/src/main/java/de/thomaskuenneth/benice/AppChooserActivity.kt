@@ -73,75 +73,75 @@ class AppChooserActivity : ComponentActivity() {
         windowSizeClass = computeWindowSizeClass()
         setContent {
             MaterialTheme(
-                    colorScheme = defaultColorScheme()
+                colorScheme = defaultColorScheme()
             ) {
                 val state by viewModel.uiState.collectAsState()
                 val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
                 Scaffold(
-                        topBar = {
-                            var moreOpen by remember { mutableStateOf(false) }
-                            TopAppBar(
-                                    title = { Text(text = stringResource(id = R.string.app_name)) },
-                                    scrollBehavior = scrollBehavior,
-                                    actions = {
-                                        val menuItems = mutableListOf<@Composable () -> Unit>()
-                                        if (!windowSizeClass.hasExpandedScreen()) {
-                                            menuItems.add {
-                                                DropdownMenuItem(
-                                                        text = {
-                                                            Text(
-                                                                    text = stringResource(id = R.string.launch_adjacent)
-                                                            )
-                                                        },
-                                                        leadingIcon = {
-                                                            val checked = state.launchAdjacent
-                                                            Icon(
-                                                                    imageVector = if (checked) {
-                                                                        Icons.Default.CheckBox
-                                                                    } else {
-                                                                        Icons.Default.CheckBoxOutlineBlank
-                                                                    },
-                                                                    contentDescription = stringResource(
-                                                                            id = if (checked) {
-                                                                                R.string.checked
-                                                                            } else {
-                                                                                R.string.not_checked
-                                                                            }
-                                                                    )
-                                                            )
-                                                        },
-                                                        onClick = {
-                                                            val newValue = !state.launchAdjacent
-                                                            viewModel.setLaunchAdjacent(newValue)
-                                                            prefs.edit()
-                                                                    .putBoolean(
-                                                                            PREFS_LAUNCH_ADJACENT,
-                                                                            newValue
-                                                                    )
-                                                                    .apply()
-                                                            moreOpen = false
-                                                        })
-                                            }
-                                        }
-                                        if (menuItems.isNotEmpty()) {
-                                            IconButtonWithTooltip(
-                                                    onClick = { moreOpen = true },
-                                                    imageVector = Icons.Default.MoreVert,
-                                                    contentDescription = stringResource(id = R.string.more_vert)
-                                            )
-                                            DropdownMenu(
-                                                    expanded = moreOpen,
-                                                    onDismissRequest = { moreOpen = false }
-                                            ) {
-                                                menuItems.forEach { item -> item() }
-                                            }
-                                        }
+                    topBar = {
+                        var moreOpen by remember { mutableStateOf(false) }
+                        TopAppBar(
+                            title = { Text(text = stringResource(id = R.string.app_name)) },
+                            scrollBehavior = scrollBehavior,
+                            actions = {
+                                val menuItems = mutableListOf<@Composable () -> Unit>()
+                                if (!windowSizeClass.hasExpandedScreen()) {
+                                    menuItems.add {
+                                        DropdownMenuItem(
+                                            text = {
+                                                Text(
+                                                    text = stringResource(id = R.string.launch_adjacent)
+                                                )
+                                            },
+                                            leadingIcon = {
+                                                val checked = state.launchAdjacent
+                                                Icon(
+                                                    imageVector = if (checked) {
+                                                        Icons.Default.CheckBox
+                                                    } else {
+                                                        Icons.Default.CheckBoxOutlineBlank
+                                                    },
+                                                    contentDescription = stringResource(
+                                                        id = if (checked) {
+                                                            R.string.checked
+                                                        } else {
+                                                            R.string.not_checked
+                                                        }
+                                                    )
+                                                )
+                                            },
+                                            onClick = {
+                                                val newValue = !state.launchAdjacent
+                                                viewModel.setLaunchAdjacent(newValue)
+                                                prefs.edit()
+                                                    .putBoolean(
+                                                        PREFS_LAUNCH_ADJACENT,
+                                                        newValue
+                                                    )
+                                                    .apply()
+                                                moreOpen = false
+                                            })
                                     }
-                            )
-                        },
-                        // currently necessary to achieve edge to edge at the bottom
-                        bottomBar = { Spacer(modifier = Modifier.height(0.dp)) },
-                        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+                                }
+                                if (menuItems.isNotEmpty()) {
+                                    IconButtonWithTooltip(
+                                        onClick = { moreOpen = true },
+                                        imageVector = Icons.Default.MoreVert,
+                                        contentDescription = stringResource(id = R.string.more_vert)
+                                    )
+                                    DropdownMenu(
+                                        expanded = moreOpen,
+                                        onDismissRequest = { moreOpen = false }
+                                    ) {
+                                        menuItems.forEach { item -> item() }
+                                    }
+                                }
+                            }
+                        )
+                    },
+                    // currently necessary to achieve edge to edge at the bottom
+                    bottomBar = { Spacer(modifier = Modifier.height(0.dp)) },
+                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
                 ) { paddingValues ->
                     BeNiceScreen(
                         windowSizeClass = windowSizeClass,
@@ -164,12 +164,12 @@ class AppChooserActivity : ComponentActivity() {
     private fun onClick(appInfo: AppInfo, forceLaunchAdjacent: Boolean) {
         with(appInfo) {
             launchApp(
-                    packageName = packageName,
-                    className = className,
-                    launchAdjacent = forceLaunchAdjacent || shouldLaunchAdjacent(
-                            prefs = prefs,
-                            windowSizeClass = windowSizeClass
-                    )
+                packageName = packageName,
+                className = className,
+                launchAdjacent = forceLaunchAdjacent || shouldLaunchAdjacent(
+                    prefs = prefs,
+                    windowSizeClass = windowSizeClass
+                )
             )
         }
     }
@@ -177,10 +177,10 @@ class AppChooserActivity : ComponentActivity() {
     private fun onAddLinkClicked(appInfo: AppInfo) {
         if (shortcutManager.isRequestPinShortcutSupported) {
             val shortcutInfo = ShortcutInfo.Builder(this, appInfo.className)
-                    .setIcon(Icon.createWithAdaptiveBitmap(appInfo.icon.toBitmap()))
-                    .setShortLabel(appInfo.label)
-                    .setIntent(createBeNiceLaunchIntent(appInfo))
-                    .build()
+                .setIcon(Icon.createWithAdaptiveBitmap(appInfo.icon.toBitmap()))
+                .setShortLabel(appInfo.label)
+                .setIntent(createBeNiceLaunchIntent(appInfo))
+                .build()
             shortcutManager.requestPinShortcut(shortcutInfo, null)
         }
     }
@@ -189,15 +189,15 @@ class AppChooserActivity : ComponentActivity() {
         Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).run {
             data = Uri.parse("package:${appInfo.packageName}")
             addFlags(
-                    FLAG_ACTIVITY_LAUNCH_ADJACENT or
-                            FLAG_ACTIVITY_NEW_TASK or
-                            FLAG_ACTIVITY_CLEAR_TASK
+                FLAG_ACTIVITY_LAUNCH_ADJACENT or
+                        FLAG_ACTIVITY_NEW_TASK or
+                        FLAG_ACTIVITY_CLEAR_TASK
             )
             startActivity(this)
         }
     }
 
-    private fun onAppsForAppPairSelected(firstApp: AppInfo, secondApp: AppInfo) {
+    private fun onAppsForAppPairSelected(firstApp: AppInfo, secondApp: AppInfo, delay: Long) {
         if (shortcutManager.isRequestPinShortcutSupported) {
             val id = "${firstApp.className}|${secondApp.className}"
             val label = "${firstApp.label} \u2011 ${secondApp.label}"
@@ -211,7 +211,7 @@ class AppChooserActivity : ComponentActivity() {
                     )
                 )
                 .setShortLabel(label)
-                .setIntent(createLaunchAppPairIntent(firstApp, secondApp))
+                .setIntent(createLaunchAppPairIntent(firstApp, secondApp, delay))
                 .build()
             shortcutManager.requestPinShortcut(shortcutInfo, null)
         }
@@ -256,8 +256,8 @@ fun Activity.computeWindowSizeClass(): WindowSizeClass {
 }
 
 fun shouldLaunchAdjacent(
-        prefs: SharedPreferences,
-        windowSizeClass: WindowSizeClass
+    prefs: SharedPreferences,
+    windowSizeClass: WindowSizeClass
 ) = prefs.getBoolean(PREFS_LAUNCH_ADJACENT, true) ||
         windowSizeClass.hasExpandedScreen()
 

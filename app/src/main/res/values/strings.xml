@@ -9,5 +9,12 @@
     <string name="more_vert">Options menu</string>
     <string name="checked">checked</string>
     <string name="not_checked">not checked</string>
-    <string name="create_app_pair">Create app pair…</string>
+    <string name="create_app_pair">Create app pair</string>
+    <string name="create">Create</string>
+    <string name="cancel">Cancel</string>
+    <string name="first_app">First app</string>
+    <string name="second_app">Second app</string>
+    <string name="launch_after">Launch second app after</string>
+    <string name="five_hundred_ms">500 ms</string>
+    <string name="two_secs">2 s</string>
 </resources>
