@@ -37,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
@@ -50,7 +51,7 @@ fun BeNiceScreen(
     onClick: (AppInfo, Boolean) -> Unit,
     onAddLinkClicked: (AppInfo) -> Unit,
     onOpenAppInfoClicked: (AppInfo) -> Unit,
-    onAppsForAppPairSelected: (AppInfo, AppInfo, Long) -> Unit,
+    onAppsForAppPairSelected: (AppInfo, AppInfo, Long, String) -> Unit,
     modifier: Modifier
 ) {
     var contextMenuAppInfo by remember { mutableStateOf<AppInfo?>(null) }
@@ -146,7 +147,14 @@ fun BeNiceScreen(
             installedApps = state.installedApps,
             onClick = { secondApp, _ ->
                 showSelectSecondAppDialog = false
-                firstApp?.let { onAppsForAppPairSelected(it, secondApp, 500L) }
+                firstApp?.let {
+                    onAppsForAppPairSelected(
+                        it,
+                        secondApp,
+                        500L,
+                        label(it, secondApp)
+                    )
+                }
             },
             onDismissRequest = {
                 showSelectSecondAppDialog = false
@@ -157,8 +165,8 @@ fun BeNiceScreen(
         AppPairDialog(
             state = state,
             onDismissRequest = { showAppPairDialog = false },
-            onFinished = { first, second, delay ->
-                onAppsForAppPairSelected(first, second, delay)
+            onFinished = { first, second, delay, label ->
+                onAppsForAppPairSelected(first, second, delay, label)
                 showAppPairDialog = false
             }
         )
@@ -169,17 +177,25 @@ fun BeNiceScreen(
 fun AppPairDialog(
     state: BeNiceScreenUiState,
     onDismissRequest: () -> Unit,
-    onFinished: (AppInfo, AppInfo, Long) -> Unit
+    onFinished: (AppInfo, AppInfo, Long, String) -> Unit
 ) {
     var firstApp: AppInfo? by remember { mutableStateOf(null) }
     var secondApp: AppInfo? by remember { mutableStateOf(null) }
     var delay by remember { mutableFloatStateOf(500F) }
+    var label by remember(firstApp, secondApp) {
+        mutableStateOf(
+            label(
+                firstApp = firstApp,
+                secondApp = secondApp
+            )
+        )
+    }
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             Button(
-                enabled = firstApp != null && secondApp != null,
-                onClick = { onFinished(firstApp!!, secondApp!!, delay.toLong()) }) {
+                enabled = label.isNotBlank() && firstApp != null && secondApp != null,
+                onClick = { onFinished(firstApp!!, secondApp!!, delay.toLong(), label) }) {
                 Text(text = stringResource(id = R.string.create))
             }
         },
@@ -195,13 +211,19 @@ fun AppPairDialog(
                     installedApps = state.installedApps,
                     selectedApp = firstApp,
                     hint = R.string.first_app,
-                    onItemClicked = { selectedApp -> firstApp = selectedApp }
+                    onItemClicked = { selectedApp ->
+                        firstApp = selectedApp
+                        label(firstApp = firstApp, secondApp = secondApp)
+                    }
                 )
                 CompactAppChooser(
                     installedApps = state.installedApps,
                     selectedApp = secondApp,
                     hint = R.string.second_app,
-                    onItemClicked = { selectedApp -> secondApp = selectedApp }
+                    onItemClicked = { selectedApp ->
+                        secondApp = selectedApp
+                        label(firstApp = firstApp, secondApp = secondApp)
+                    }
                 )
                 Text(
                     modifier = Modifier.padding(top = 16.dp),
@@ -229,7 +251,20 @@ fun AppPairDialog(
                         style = MaterialTheme.typography.labelMedium
                     )
                 }
+                if (firstApp != null && secondApp != null) {
+                    BeNiceTextField(
+                        value = label,
+                        resId = R.string.app_pair_label,
+                        message = if (label.isBlank()) stringResource(id = R.string.label_cannot_be_blank) else "",
+                        keyboardType = KeyboardType.Text,
+                        onValueChange = { label = it }
+                    )
+                }
             }
         }
     )
 }
+
+private const val UNSPECIFIED = "???"
+private fun label(firstApp: AppInfo?, secondApp: AppInfo?) =
+    "${firstApp?.label ?: UNSPECIFIED} \u2011 ${secondApp?.label ?: UNSPECIFIED}"

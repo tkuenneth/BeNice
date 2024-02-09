@@ -17,4 +17,6 @@
     <string name="launch_after">Launch second app after</string>
     <string name="five_hundred_ms">500 ms</string>
     <string name="two_secs">2 s</string>
+    <string name="app_pair_label">Label</string>
+    <string name="label_cannot_be_blank">Label cannot be blank</string>
 </resources>
