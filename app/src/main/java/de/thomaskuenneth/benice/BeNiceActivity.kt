@@ -1,5 +1,6 @@
 package de.thomaskuenneth.benice
 
+import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -91,7 +92,7 @@ class BeNiceActivity : ComponentActivity() {
     }
 }
 
-fun Context.launchApp(
+fun Activity.launchApp(
     packageName: String,
     className: String,
     launchAdjacent: Boolean
