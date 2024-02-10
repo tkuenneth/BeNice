@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddLink
@@ -26,6 +28,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -206,60 +209,81 @@ fun AppPairDialog(
         },
         title = { Text(text = stringResource(id = R.string.create_app_pair)) },
         text = {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                CompactAppChooser(
-                    installedApps = state.installedApps,
-                    selectedApp = firstApp,
-                    hint = R.string.first_app,
-                    onItemClicked = { selectedApp ->
-                        firstApp = selectedApp
-                        label(firstApp = firstApp, secondApp = secondApp)
-                    }
-                )
-                CompactAppChooser(
-                    installedApps = state.installedApps,
-                    selectedApp = secondApp,
-                    hint = R.string.second_app,
-                    onItemClicked = { selectedApp ->
-                        secondApp = selectedApp
-                        label(firstApp = firstApp, secondApp = secondApp)
-                    }
-                )
-                Text(
-                    modifier = Modifier.padding(top = 16.dp),
-                    text = stringResource(id = R.string.launch_after),
-                    style = MaterialTheme.typography.labelLarge
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+            Box {
+                val scrollState = rememberScrollState()
+                val coroutineScope = rememberCoroutineScope()
+                val showDownButton by remember { derivedStateOf { scrollState.value == 0 && scrollState.canScrollForward } }
+                val showUpButton by remember { derivedStateOf { scrollState.value == scrollState.maxValue && scrollState.canScrollBackward } }
+                Column(
+                    modifier = Modifier.verticalScroll(scrollState),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    CompactAppChooser(
+                        installedApps = state.installedApps,
+                        selectedApp = firstApp,
+                        hint = R.string.select_first_app,
+                        onItemClicked = { selectedApp ->
+                            firstApp = selectedApp
+                            label(firstApp = firstApp, secondApp = secondApp)
+                        }
+                    )
+                    CompactAppChooser(
+                        installedApps = state.installedApps,
+                        selectedApp = secondApp,
+                        hint = R.string.select_second_app,
+                        onItemClicked = { selectedApp ->
+                            secondApp = selectedApp
+                            label(firstApp = firstApp, secondApp = secondApp)
+                        }
+                    )
                     Text(
-                        text = stringResource(id = R.string.five_hundred_ms),
-                        style = MaterialTheme.typography.labelMedium
+                        modifier = Modifier.padding(top = 16.dp),
+                        text = stringResource(id = R.string.launch_after),
+                        style = MaterialTheme.typography.labelLarge
                     )
-                    Slider(
-                        value = delay,
-                        onValueChange = { delay = it },
-                        valueRange = (500F..2000F),
-                        steps = 14,
-                        modifier = Modifier.weight(1.0F)
-                    )
-                    Text(
-                        text = stringResource(id = R.string.two_secs),
-                        style = MaterialTheme.typography.labelMedium
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.five_hundred_ms),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                        Slider(
+                            value = delay,
+                            onValueChange = { delay = it },
+                            valueRange = (500F..2000F),
+                            steps = 14,
+                            modifier = Modifier.weight(1.0F)
+                        )
+                        Text(
+                            text = stringResource(id = R.string.two_secs),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
+                    if (firstApp != null && secondApp != null) {
+                        BeNiceTextField(
+                            value = label,
+                            resId = R.string.app_pair_label,
+                            message = if (label.isBlank()) stringResource(id = R.string.label_cannot_be_blank) else "",
+                            keyboardType = KeyboardType.Text,
+                            onValueChange = { label = it }
+                        )
+                    }
                 }
-                if (firstApp != null && secondApp != null) {
-                    BeNiceTextField(
-                        value = label,
-                        resId = R.string.app_pair_label,
-                        message = if (label.isBlank()) stringResource(id = R.string.label_cannot_be_blank) else "",
-                        keyboardType = KeyboardType.Text,
-                        onValueChange = { label = it }
-                    )
-                }
+                AnimatedUpOrDownButton(
+                    isUpButton = true,
+                    shouldBeVisible = showUpButton,
+                    coroutineScope = coroutineScope,
+                    scrollState = scrollState
+                )
+                AnimatedUpOrDownButton(
+                    isUpButton = false,
+                    shouldBeVisible = showDownButton,
+                    coroutineScope = coroutineScope,
+                    scrollState = scrollState
+                )
             }
         }
     )

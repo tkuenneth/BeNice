@@ -12,11 +12,13 @@
     <string name="create_app_pair">Create app pair</string>
     <string name="create">Create</string>
     <string name="cancel">Cancel</string>
-    <string name="first_app">First app</string>
-    <string name="second_app">Second app</string>
+    <string name="select_first_app">Select first app</string>
+    <string name="select_second_app">Select second app</string>
     <string name="launch_after">Launch second app after</string>
     <string name="five_hundred_ms">500 ms</string>
     <string name="two_secs">2 s</string>
     <string name="app_pair_label">Label</string>
     <string name="label_cannot_be_blank">Label cannot be blank</string>
+    <string name="scroll_to_start">Scroll to start</string>
+    <string name="scroll_to_end">Scroll to end</string>
 </resources>
