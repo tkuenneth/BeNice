@@ -1,5 +1,8 @@
 package de.thomaskuenneth.benice
 
+import android.app.Activity
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -287,6 +290,14 @@ fun AppPairDialog(
             }
         }
     )
+}
+
+fun Activity.startActivityCatchExceptions(intent: Intent) {
+    try {
+        startActivity(intent)
+    } catch (ex: Exception) {
+        Toast.makeText(this, R.string.something_went_wrong, Toast.LENGTH_LONG).show()
+    }
 }
 
 private const val UNSPECIFIED = "???"

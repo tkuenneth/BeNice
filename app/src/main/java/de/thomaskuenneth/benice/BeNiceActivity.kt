@@ -61,7 +61,7 @@ class BeNiceActivity : ComponentActivity() {
             if (launchAdjacent) {
                 Intent(this, AppChooserActivity::class.java).run {
                     addFlags(FLAG_ACTIVITY_NEW_TASK)
-                    startActivity(this)
+                    startActivityCatchExceptions(this)
                 }
             }
             Handler(Looper.getMainLooper()).postDelayed({
@@ -108,7 +108,7 @@ fun Context.launchApp(
                         FLAG_ACTIVITY_TASK_ON_HOME
             )
         }
-        startActivity(this)
+        startActivityCatchExceptions(this)
     }
 }
 

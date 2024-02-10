@@ -193,7 +193,7 @@ class AppChooserActivity : ComponentActivity() {
                         FLAG_ACTIVITY_NEW_TASK or
                         FLAG_ACTIVITY_CLEAR_TASK
             )
-            startActivity(this)
+            startActivityCatchExceptions(this)
         }
     }
 
