@@ -84,6 +84,7 @@ fun BeNiceScreen(
                     WindowWidthSizeClass.EXPANDED -> 3
                     else -> 1
                 },
+                letterPosition = state.letterPosition,
                 onClick = onClick,
                 onLongClick = { appInfo ->
                     contextMenuAppInfo = appInfo
@@ -138,6 +139,7 @@ fun BeNiceScreen(
     if (showSelectSecondAppDialog) {
         AppChooserDialog(
             installedApps = state.installedApps,
+            letterPosition = state.letterPosition,
             onClick = { secondApp ->
                 showSelectSecondAppDialog = false
                 firstApp?.let {
@@ -205,6 +207,7 @@ fun AppPairDialog(
                 ) {
                     CompactAppChooser(
                         installedApps = state.installedApps,
+                        letterPosition = state.letterPosition,
                         selectedApp = firstApp,
                         hint = R.string.select_first_app,
                         onItemClicked = { selectedApp ->
@@ -214,6 +217,7 @@ fun AppPairDialog(
                     )
                     CompactAppChooser(
                         installedApps = state.installedApps,
+                        letterPosition = state.letterPosition,
                         selectedApp = secondApp,
                         hint = R.string.select_second_app,
                         onItemClicked = { selectedApp ->
@@ -231,10 +235,7 @@ fun AppPairDialog(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(
-                            text = stringResource(id = R.string.five_hundred_ms),
-                            style = MaterialTheme.typography.labelMedium
-                        )
+                        BeNiceLabel(text = R.string.five_hundred_ms)
                         Slider(
                             value = delay,
                             onValueChange = { delay = it },

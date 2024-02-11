@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -32,6 +34,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
@@ -40,6 +45,8 @@ import androidx.core.graphics.drawable.toBitmap
 import androidx.preference.PreferenceManager
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.layout.WindowMetricsCalculator
+
+private const val KEY_LETTER_POSITION = "letterPosition"
 
 class AppChooserActivity : ComponentActivity() {
 
@@ -54,6 +61,7 @@ class AppChooserActivity : ComponentActivity() {
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
         enableEdgeToEdge()
         val viewModel by viewModels<BeNiceViewModel>()
+        viewModel.setLetterPosition(prefs.getInt(KEY_LETTER_POSITION, 1))
         windowSizeClass = computeWindowSizeClass()
         setContent {
             MaterialTheme(
@@ -61,12 +69,18 @@ class AppChooserActivity : ComponentActivity() {
             ) {
                 val state by viewModel.uiState.collectAsState()
                 val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+                var settingsOpen by remember { mutableStateOf(false) }
                 Scaffold(
                     topBar = {
 //                        var moreOpen by remember { mutableStateOf(false) }
                         TopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) },
                             scrollBehavior = scrollBehavior,
                             actions = {
+                                IconButtonWithTooltip(
+                                    onClick = { settingsOpen = true },
+                                    imageVector = Icons.Default.Settings,
+                                    contentDescription = stringResource(id = R.string.settings)
+                                )
 //                                val menuItems = mutableListOf<@Composable () -> Unit>()
 //                                if (menuItems.isNotEmpty()) {
 //                                    IconButtonWithTooltip(
@@ -98,6 +112,14 @@ class AppChooserActivity : ComponentActivity() {
                             .fillMaxSize()
                             .padding(paddingValues = paddingValues)
                             .background(color = MaterialTheme.colorScheme.background)
+                    )
+                    SettingsScreen(
+                        isOpen = settingsOpen,
+                        viewModel = viewModel,
+                        sheetClosed = {
+                            settingsOpen = false
+                            prefs.edit().putInt(KEY_LETTER_POSITION, state.letterPosition).apply()
+                        }
                     )
                 }
             }
@@ -185,6 +207,3 @@ fun Activity.computeWindowSizeClass(): WindowSizeClass {
     val density = resources.displayMetrics.density
     return WindowSizeClass.compute(width / density, height / density)
 }
-
-//fun WindowSizeClass.hasExpandedScreen() =
-//    windowWidthSizeClass == WindowWidthSizeClass.EXPANDED || windowHeightSizeClass == WindowHeightSizeClass.EXPANDED

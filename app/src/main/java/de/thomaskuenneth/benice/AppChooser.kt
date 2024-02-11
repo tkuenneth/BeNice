@@ -42,6 +42,7 @@ import androidx.compose.ui.window.Dialog
 fun AppChooser(
     installedApps: List<AppInfo>,
     columns: Int,
+    letterPosition: Int,
     onClick: (AppInfo) -> Unit,
     onLongClick: (AppInfo) -> Unit
 ) {
@@ -68,10 +69,15 @@ fun AppChooser(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp, vertical = 8.dp)
-                                    .background(color = MaterialTheme.colorScheme.secondaryContainer),
+                                    .background(color = MaterialTheme.colorScheme.secondaryContainer)
+                                    .padding(horizontal = 8.dp),
                                 text = current,
                                 style = MaterialTheme.typography.labelLarge,
-                                textAlign = TextAlign.Center,
+                                textAlign = when (letterPosition) {
+                                    0 -> TextAlign.Left
+                                    1 -> TextAlign.Center
+                                    else -> TextAlign.Right
+                                },
                                 color = MaterialTheme.colorScheme.onSecondaryContainer
                             )
                         }
@@ -119,7 +125,10 @@ fun AppChooserItem(
 
 @Composable
 fun AppChooserDialog(
-    installedApps: List<AppInfo>, onClick: (AppInfo) -> Unit, onDismissRequest: () -> Unit
+    installedApps: List<AppInfo>,
+    letterPosition: Int,
+    onClick: (AppInfo) -> Unit,
+    onDismissRequest: () -> Unit
 ) {
     Dialog(
         onDismissRequest = onDismissRequest
@@ -132,6 +141,7 @@ fun AppChooserDialog(
             AppChooser(
                 installedApps = installedApps,
                 columns = 1,
+                letterPosition = letterPosition,
                 onClick = onClick,
                 onLongClick = {})
         }
@@ -141,6 +151,7 @@ fun AppChooserDialog(
 @Composable
 fun CompactAppChooser(
     installedApps: List<AppInfo>,
+    letterPosition: Int,
     selectedApp: AppInfo?,
     @StringRes hint: Int,
     onItemClicked: (AppInfo) -> Unit
@@ -165,11 +176,15 @@ fun CompactAppChooser(
         }
     }
     if (appChooserDialogOpen) {
-        AppChooserDialog(installedApps = installedApps, onClick = { appInfo ->
-            appChooserDialogOpen = false
-            onItemClicked(appInfo)
-        }, onDismissRequest = {
-            appChooserDialogOpen = false
-        })
+        AppChooserDialog(
+            installedApps = installedApps,
+            letterPosition = letterPosition,
+            onClick = { appInfo ->
+                appChooserDialogOpen = false
+                onItemClicked(appInfo)
+            },
+            onDismissRequest = {
+                appChooserDialogOpen = false
+            })
     }
 }

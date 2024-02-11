@@ -12,7 +12,9 @@ import kotlinx.coroutines.launch
 
 
 data class BeNiceScreenUiState(
-    val isLoading: Boolean = false, val installedApps: List<AppInfo> = emptyList()
+    val isLoading: Boolean = false,
+    val installedApps: List<AppInfo> = emptyList(),
+    val letterPosition: Int = 1
 )
 
 class BeNiceViewModel : ViewModel() {
@@ -30,6 +32,10 @@ class BeNiceViewModel : ViewModel() {
             }
             setLoading(false)
         }
+    }
+
+    fun setLetterPosition(position: Int) {
+        _uiState.update { currentState -> currentState.copy(letterPosition = position) }
     }
 
     private fun setLoading(isLoading: Boolean) {
