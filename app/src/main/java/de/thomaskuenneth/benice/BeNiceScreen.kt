@@ -13,14 +13,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Launch
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddLink
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Launch
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -40,9 +39,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
@@ -54,7 +51,7 @@ import kotlinx.coroutines.launch
 fun BeNiceScreen(
     windowSizeClass: WindowSizeClass,
     state: BeNiceScreenUiState,
-    onClick: (AppInfo, Boolean) -> Unit,
+    onClick: (AppInfo) -> Unit,
     onAddLinkClicked: (AppInfo) -> Unit,
     onOpenAppInfoClicked: (AppInfo) -> Unit,
     onAppsForAppPairSelected: (AppInfo, AppInfo, Long, String) -> Unit,
@@ -79,87 +76,72 @@ fun BeNiceScreen(
         contentAlignment = Alignment.Center
     )
     {
-        when (state.isLoading) {
-            true -> CircularProgressIndicator()
-            false -> {
-                AppChooser(
-                    installedApps = state.installedApps,
-                    columns = when (windowSizeClass.windowWidthSizeClass) {
-                        WindowWidthSizeClass.MEDIUM -> 2
-                        WindowWidthSizeClass.EXPANDED -> 3
-                        else -> 1
-                    },
-                    onClick = onClick,
-                    onLongClick = { appInfo ->
-                        contextMenuAppInfo = appInfo
-                    }
-                )
-                FloatingActionButton(
-                    onClick = { showAppPairDialog = true },
-                    modifier = Modifier
-                        .align(alignment = Alignment.BottomEnd)
-                        .padding(end = 16.dp, bottom = 16.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = stringResource(id = R.string.create_app_pair)
-                    )
+        if (!state.isLoading) {
+            AppChooser(
+                installedApps = state.installedApps,
+                columns = when (windowSizeClass.windowWidthSizeClass) {
+                    WindowWidthSizeClass.MEDIUM -> 2
+                    WindowWidthSizeClass.EXPANDED -> 3
+                    else -> 1
+                },
+                onClick = onClick,
+                onLongClick = { appInfo ->
+                    contextMenuAppInfo = appInfo
                 }
+            )
+            FloatingActionButton(
+                onClick = { showAppPairDialog = true },
+                modifier = Modifier
+                    .align(alignment = Alignment.BottomEnd)
+                    .padding(end = 16.dp, bottom = 16.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = stringResource(id = R.string.create_app_pair)
+                )
             }
         }
-        contextMenuAppInfo?.let {
-            ModalBottomSheet(
-                onDismissRequest = { contextMenuAppInfo = null },
-                sheetState = sheetState,
-                windowInsets = WindowInsets(0),
-            ) {
-                MenuItem(
-                    onClick = { closeSheet { onClick(it, false) } },
-                    imageVector = Icons.Default.Launch,
-                    textRes = R.string.launch
-                )
-                if (!state.launchAdjacent && !windowSizeClass.hasExpandedScreen()) {
-                    MenuItem(
-                        onClick = { closeSheet { onClick(it, true) } },
-                        imageVector = ImageVector.vectorResource(id = R.drawable.launch_adjacent),
-                        textRes = R.string.launch_adjacent
-                    )
-                }
-                MenuItem(
-                    onClick = { closeSheet { onOpenAppInfoClicked(it) } },
-                    imageVector = Icons.Default.Info,
-                    textRes = R.string.open_app_info
-                )
-                MenuItem(
-                    onClick = { closeSheet { onAddLinkClicked(it) } },
-                    imageVector = Icons.Default.AddLink,
-                    textRes = R.string.add_link
-                )
-                MenuItem(
-                    onClick = {
-                        closeSheet {
-                            firstApp = it
-                            showSelectSecondAppDialog = true
-                        }
-                    },
-                    imageVector = Icons.Default.Create,
-                    textRes = R.string.create_app_pair
-                )
-            }
+    }
+    contextMenuAppInfo?.let {
+        ModalBottomSheet(
+            onDismissRequest = { contextMenuAppInfo = null },
+            sheetState = sheetState,
+            windowInsets = WindowInsets(0),
+        ) {
+            MenuItem(
+                onClick = { closeSheet { onClick(it) } },
+                imageVector = Icons.AutoMirrored.Filled.Launch,
+                textRes = R.string.launch
+            )
+            MenuItem(
+                onClick = { closeSheet { onOpenAppInfoClicked(it) } },
+                imageVector = Icons.Default.Info,
+                textRes = R.string.open_app_info
+            )
+            MenuItem(
+                onClick = { closeSheet { onAddLinkClicked(it) } },
+                imageVector = Icons.Default.AddLink,
+                textRes = R.string.add_link
+            )
+            MenuItem(
+                onClick = {
+                    closeSheet {
+                        firstApp = it
+                        showSelectSecondAppDialog = true
+                    }
+                },
+                imageVector = Icons.Default.Create,
+                textRes = R.string.create_app_pair
+            )
         }
     }
     if (showSelectSecondAppDialog) {
         AppChooserDialog(
             installedApps = state.installedApps,
-            onClick = { secondApp, _ ->
+            onClick = { secondApp ->
                 showSelectSecondAppDialog = false
                 firstApp?.let {
-                    onAppsForAppPairSelected(
-                        it,
-                        secondApp,
-                        500L,
-                        label(it, secondApp)
-                    )
+                    onAppsForAppPairSelected(it, secondApp, 500L, label(it, secondApp))
                 }
             },
             onDismissRequest = {

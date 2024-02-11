@@ -2,6 +2,7 @@ package de.thomaskuenneth.benice
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -41,7 +42,7 @@ import androidx.compose.ui.window.Dialog
 fun AppChooser(
     installedApps: List<AppInfo>,
     columns: Int,
-    onClick: (AppInfo, Boolean) -> Unit,
+    onClick: (AppInfo) -> Unit,
     onLongClick: (AppInfo) -> Unit
 ) {
     val haptics = LocalHapticFeedback.current
@@ -57,28 +58,30 @@ fun AppChooser(
             modifier = Modifier.fillMaxSize(), columns = GridCells.Fixed(count = columns)
         ) {
             var last = ""
+            var counter = 0
             installedApps.forEach { appInfo ->
                 appInfo.label.substring((0 until 1)).let { current ->
                     if (current != last) {
                         last = current
-                        header {
+                        header(key = counter++) {
                             Text(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                                    .background(color = MaterialTheme.colorScheme.secondaryContainer),
                                 text = current,
                                 style = MaterialTheme.typography.labelLarge,
                                 textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.secondary
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
                             )
                         }
                     }
                 }
-                item {
+                item(key = counter++) {
                     AppChooserItem(
                         appInfo = appInfo,
                         modifier = Modifier.combinedClickable(
-                            onClick = { onClick(appInfo, false) },
+                            onClick = { onClick(appInfo) },
                             onLongClick = {
                                 haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                                 onLongClick(appInfo)
@@ -94,8 +97,7 @@ fun AppChooser(
 
 @Composable
 fun AppChooserItem(
-    appInfo: AppInfo,
-    modifier: Modifier = Modifier
+    appInfo: AppInfo, modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
@@ -117,9 +119,7 @@ fun AppChooserItem(
 
 @Composable
 fun AppChooserDialog(
-    installedApps: List<AppInfo>,
-    onClick: (AppInfo, Boolean) -> Unit,
-    onDismissRequest: () -> Unit
+    installedApps: List<AppInfo>, onClick: (AppInfo) -> Unit, onDismissRequest: () -> Unit
 ) {
     Dialog(
         onDismissRequest = onDismissRequest
@@ -129,7 +129,8 @@ fun AppChooserDialog(
             shadowElevation = 4.dp,
             shape = RoundedCornerShape(size = 12.dp)
         ) {
-            AppChooser(installedApps = installedApps,
+            AppChooser(
+                installedApps = installedApps,
                 columns = 1,
                 onClick = onClick,
                 onLongClick = {})
@@ -146,22 +147,17 @@ fun CompactAppChooser(
 ) {
     var appChooserDialogOpen by remember { mutableStateOf(false) }
     Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
+        contentAlignment = Alignment.Center, modifier = Modifier
             .fillMaxWidth()
             .height(64.dp)
     ) {
         if (selectedApp != null) {
-            AppChooserItem(
-                appInfo = selectedApp,
-                modifier = Modifier.clickable { appChooserDialogOpen = true }
-            )
+            AppChooserItem(appInfo = selectedApp,
+                modifier = Modifier.clickable { appChooserDialogOpen = true })
         } else {
-            OutlinedButton(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = {
-                    appChooserDialogOpen = true
-                }) {
+            OutlinedButton(modifier = Modifier.fillMaxWidth(), onClick = {
+                appChooserDialogOpen = true
+            }) {
                 Text(
                     text = stringResource(id = hint)
                 )
@@ -169,15 +165,11 @@ fun CompactAppChooser(
         }
     }
     if (appChooserDialogOpen) {
-        AppChooserDialog(
-            installedApps = installedApps,
-            onClick = { appInfo, _ ->
-                appChooserDialogOpen = false
-                onItemClicked(appInfo)
-            },
-            onDismissRequest = {
-                appChooserDialogOpen = false
-            }
-        )
+        AppChooserDialog(installedApps = installedApps, onClick = { appInfo ->
+            appChooserDialogOpen = false
+            onItemClicked(appInfo)
+        }, onDismissRequest = {
+            appChooserDialogOpen = false
+        })
     }
 }

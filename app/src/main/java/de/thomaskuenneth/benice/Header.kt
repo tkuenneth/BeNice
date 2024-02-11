@@ -6,7 +6,8 @@ import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.runtime.Composable
 
 fun LazyGridScope.header(
-        content: @Composable LazyGridItemScope.() -> Unit
+    key: Any? = null,
+    content: @Composable LazyGridItemScope.() -> Unit
 ) {
-    item(span = { GridItemSpan(maxLineSpan) }, content = content)
+    item(key = key, span = { GridItemSpan(maxLineSpan) }, content = content)
 }

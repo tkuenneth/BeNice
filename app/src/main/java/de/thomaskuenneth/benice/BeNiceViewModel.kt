@@ -12,9 +12,7 @@ import kotlinx.coroutines.launch
 
 
 data class BeNiceScreenUiState(
-    val launchAdjacent: Boolean = false,
-    val isLoading: Boolean = false,
-    val installedApps: List<AppInfo> = emptyList()
+    val isLoading: Boolean = false, val installedApps: List<AppInfo> = emptyList()
 )
 
 class BeNiceViewModel : ViewModel() {
@@ -22,23 +20,13 @@ class BeNiceViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(BeNiceScreenUiState())
     val uiState: StateFlow<BeNiceScreenUiState> = _uiState.asStateFlow()
 
-    fun setLaunchAdjacent(launchAdjacent: Boolean) {
-        _uiState.update { currentState ->
-            currentState.copy(
-                launchAdjacent = launchAdjacent
-            )
-        }
-    }
-
     fun queryInstalledApps(packageManager: PackageManager) {
         setLoading(true)
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { currentState ->
-                currentState.copy(
-                    installedApps = installedApps(
-                        packageManager = packageManager
-                    ).sortedBy { it.label }
-                )
+                currentState.copy(installedApps = installedApps(
+                    packageManager = packageManager
+                ).sortedBy { it.label })
             }
             setLoading(false)
         }
