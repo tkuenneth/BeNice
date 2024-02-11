@@ -1,5 +1,8 @@
 package de.thomaskuenneth.benice
 
+import android.app.Activity
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,6 +10,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddLink
@@ -26,6 +31,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
@@ -50,7 +57,7 @@ fun BeNiceScreen(
     onClick: (AppInfo, Boolean) -> Unit,
     onAddLinkClicked: (AppInfo) -> Unit,
     onOpenAppInfoClicked: (AppInfo) -> Unit,
-    onAppsForAppPairSelected: (AppInfo, AppInfo, Long) -> Unit,
+    onAppsForAppPairSelected: (AppInfo, AppInfo, Long, String) -> Unit,
     modifier: Modifier
 ) {
     var contextMenuAppInfo by remember { mutableStateOf<AppInfo?>(null) }
@@ -146,7 +153,14 @@ fun BeNiceScreen(
             installedApps = state.installedApps,
             onClick = { secondApp, _ ->
                 showSelectSecondAppDialog = false
-                firstApp?.let { onAppsForAppPairSelected(it, secondApp, 500L) }
+                firstApp?.let {
+                    onAppsForAppPairSelected(
+                        it,
+                        secondApp,
+                        500L,
+                        label(it, secondApp)
+                    )
+                }
             },
             onDismissRequest = {
                 showSelectSecondAppDialog = false
@@ -157,8 +171,8 @@ fun BeNiceScreen(
         AppPairDialog(
             state = state,
             onDismissRequest = { showAppPairDialog = false },
-            onFinished = { first, second, delay ->
-                onAppsForAppPairSelected(first, second, delay)
+            onFinished = { first, second, delay, label ->
+                onAppsForAppPairSelected(first, second, delay, label)
                 showAppPairDialog = false
             }
         )
@@ -169,17 +183,25 @@ fun BeNiceScreen(
 fun AppPairDialog(
     state: BeNiceScreenUiState,
     onDismissRequest: () -> Unit,
-    onFinished: (AppInfo, AppInfo, Long) -> Unit
+    onFinished: (AppInfo, AppInfo, Long, String) -> Unit
 ) {
     var firstApp: AppInfo? by remember { mutableStateOf(null) }
     var secondApp: AppInfo? by remember { mutableStateOf(null) }
     var delay by remember { mutableFloatStateOf(500F) }
+    var label by remember(firstApp, secondApp) {
+        mutableStateOf(
+            label(
+                firstApp = firstApp,
+                secondApp = secondApp
+            )
+        )
+    }
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             Button(
-                enabled = firstApp != null && secondApp != null,
-                onClick = { onFinished(firstApp!!, secondApp!!, delay.toLong()) }) {
+                enabled = label.isNotBlank() && firstApp != null && secondApp != null,
+                onClick = { onFinished(firstApp!!, secondApp!!, delay.toLong(), label) }) {
                 Text(text = stringResource(id = R.string.create))
             }
         },
@@ -190,46 +212,94 @@ fun AppPairDialog(
         },
         title = { Text(text = stringResource(id = R.string.create_app_pair)) },
         text = {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                CompactAppChooser(
-                    installedApps = state.installedApps,
-                    selectedApp = firstApp,
-                    hint = R.string.first_app,
-                    onItemClicked = { selectedApp -> firstApp = selectedApp }
-                )
-                CompactAppChooser(
-                    installedApps = state.installedApps,
-                    selectedApp = secondApp,
-                    hint = R.string.second_app,
-                    onItemClicked = { selectedApp -> secondApp = selectedApp }
-                )
-                Text(
-                    modifier = Modifier.padding(top = 16.dp),
-                    text = stringResource(id = R.string.launch_after),
-                    style = MaterialTheme.typography.labelLarge
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+            Box {
+                val scrollState = rememberScrollState()
+                val coroutineScope = rememberCoroutineScope()
+                val showDownButton by remember { derivedStateOf { scrollState.value == 0 && scrollState.canScrollForward } }
+                val showUpButton by remember { derivedStateOf { scrollState.value == scrollState.maxValue && scrollState.canScrollBackward } }
+                Column(
+                    modifier = Modifier.verticalScroll(scrollState),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    CompactAppChooser(
+                        installedApps = state.installedApps,
+                        selectedApp = firstApp,
+                        hint = R.string.select_first_app,
+                        onItemClicked = { selectedApp ->
+                            firstApp = selectedApp
+                            label(firstApp = firstApp, secondApp = secondApp)
+                        }
+                    )
+                    CompactAppChooser(
+                        installedApps = state.installedApps,
+                        selectedApp = secondApp,
+                        hint = R.string.select_second_app,
+                        onItemClicked = { selectedApp ->
+                            secondApp = selectedApp
+                            label(firstApp = firstApp, secondApp = secondApp)
+                        }
+                    )
                     Text(
-                        text = stringResource(id = R.string.five_hundred_ms),
-                        style = MaterialTheme.typography.labelMedium
+                        modifier = Modifier.padding(top = 16.dp),
+                        text = stringResource(id = R.string.launch_after),
+                        style = MaterialTheme.typography.labelLarge
                     )
-                    Slider(
-                        value = delay,
-                        onValueChange = { delay = it },
-                        valueRange = (500F..2000F),
-                        steps = 14,
-                        modifier = Modifier.weight(1.0F)
-                    )
-                    Text(
-                        text = stringResource(id = R.string.two_secs),
-                        style = MaterialTheme.typography.labelMedium
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.five_hundred_ms),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                        Slider(
+                            value = delay,
+                            onValueChange = { delay = it },
+                            valueRange = (500F..2000F),
+                            steps = 14,
+                            modifier = Modifier.weight(1.0F)
+                        )
+                        Text(
+                            text = stringResource(id = R.string.two_secs),
+                            style = MaterialTheme.typography.labelMedium
+                        )
+                    }
+                    if (firstApp != null && secondApp != null) {
+                        BeNiceTextField(
+                            value = label,
+                            resId = R.string.app_pair_label,
+                            message = if (label.isBlank()) stringResource(id = R.string.label_cannot_be_blank) else "",
+                            keyboardType = KeyboardType.Text,
+                            onValueChange = { label = it }
+                        )
+                    }
                 }
+                AnimatedUpOrDownButton(
+                    isUpButton = true,
+                    shouldBeVisible = showUpButton,
+                    coroutineScope = coroutineScope,
+                    scrollState = scrollState
+                )
+                AnimatedUpOrDownButton(
+                    isUpButton = false,
+                    shouldBeVisible = showDownButton,
+                    coroutineScope = coroutineScope,
+                    scrollState = scrollState
+                )
             }
         }
     )
 }
+
+fun Activity.startActivityCatchExceptions(intent: Intent) {
+    try {
+        startActivity(intent)
+    } catch (ex: Exception) {
+        Toast.makeText(this, R.string.something_went_wrong, Toast.LENGTH_LONG).show()
+    }
+}
+
+private const val UNSPECIFIED = "???"
+private fun label(firstApp: AppInfo?, secondApp: AppInfo?) =
+    "${firstApp?.label ?: UNSPECIFIED} \u2011 ${secondApp?.label ?: UNSPECIFIED}"

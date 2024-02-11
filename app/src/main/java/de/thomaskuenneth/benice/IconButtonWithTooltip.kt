@@ -3,11 +3,12 @@ package de.thomaskuenneth.benice
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.PlainTooltipBox
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -17,12 +18,16 @@ fun IconButtonWithTooltip(
     imageVector: ImageVector,
     contentDescription: String
 ) {
-    PlainTooltipBox(tooltip = {
-        Text(text = contentDescription)
-    }) {
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+        tooltip = {
+            PlainTooltip {
+                Text(text = contentDescription)
+            }
+        }, state = rememberTooltipState()
+    ) {
         IconButton(
-            onClick = onClick,
-            modifier = Modifier.tooltipAnchor()
+            onClick = onClick
         ) {
             Icon(
                 imageVector = imageVector,

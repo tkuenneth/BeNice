@@ -1,5 +1,6 @@
 package de.thomaskuenneth.benice
 
+import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -61,7 +62,7 @@ class BeNiceActivity : ComponentActivity() {
             if (launchAdjacent) {
                 Intent(this, AppChooserActivity::class.java).run {
                     addFlags(FLAG_ACTIVITY_NEW_TASK)
-                    startActivity(this)
+                    startActivityCatchExceptions(this)
                 }
             }
             Handler(Looper.getMainLooper()).postDelayed({
@@ -91,7 +92,7 @@ class BeNiceActivity : ComponentActivity() {
     }
 }
 
-fun Context.launchApp(
+fun Activity.launchApp(
     packageName: String,
     className: String,
     launchAdjacent: Boolean
@@ -108,7 +109,7 @@ fun Context.launchApp(
                         FLAG_ACTIVITY_TASK_ON_HOME
             )
         }
-        startActivity(this)
+        startActivityCatchExceptions(this)
     }
 }
 

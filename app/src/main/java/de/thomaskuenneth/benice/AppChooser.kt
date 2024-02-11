@@ -18,9 +18,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -157,9 +157,11 @@ fun CompactAppChooser(
                 modifier = Modifier.clickable { appChooserDialogOpen = true }
             )
         } else {
-            TextButton(onClick = {
-                appChooserDialogOpen = true
-            }) {
+            OutlinedButton(
+                modifier = Modifier.fillMaxWidth(),
+                onClick = {
+                    appChooserDialogOpen = true
+                }) {
                 Text(
                     text = stringResource(id = hint)
                 )

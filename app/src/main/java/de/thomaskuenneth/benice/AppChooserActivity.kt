@@ -193,14 +193,18 @@ class AppChooserActivity : ComponentActivity() {
                         FLAG_ACTIVITY_NEW_TASK or
                         FLAG_ACTIVITY_CLEAR_TASK
             )
-            startActivity(this)
+            startActivityCatchExceptions(this)
         }
     }
 
-    private fun onAppsForAppPairSelected(firstApp: AppInfo, secondApp: AppInfo, delay: Long) {
+    private fun onAppsForAppPairSelected(
+        firstApp: AppInfo,
+        secondApp: AppInfo,
+        delay: Long,
+        label: String
+    ) {
         if (shortcutManager.isRequestPinShortcutSupported) {
             val id = "${firstApp.className}|${secondApp.className}"
-            val label = "${firstApp.label} \u2011 ${secondApp.label}"
             val shortcutInfo = ShortcutInfo.Builder(this, id)
                 .setIcon(
                     Icon.createWithBitmap(
