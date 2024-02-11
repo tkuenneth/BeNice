@@ -1,6 +1,4 @@
 # What's new
 
-- You can set the title (label) for app pairs
-- If launching an app fails, a message is shown
-- We reduced the download size
-- We updated libraries for improved stability
+- On smaller screens you could toggle "launch adjacent" on and off; this has been confusing so the logic has been removed
+- In the app chooser, the letters of the alphabet are highlighted for better visibility

@@ -12,7 +12,6 @@ import android.os.Handler
 import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
-import androidx.preference.PreferenceManager
 import kotlinx.coroutines.launch
 
 private const val ACTION_LAUNCH_APP = "de.thomaskuenneth.benice.intent.action.ACTION_LAUNCH_APP"
@@ -37,53 +36,36 @@ class BeNiceActivity : ComponentActivity() {
             val secondPackageName = intent.getStringExtra(PACKAGE_NAME_SECOND_APP)
             val secondClassName = intent.getStringExtra(CLASS_NAME_SECOND_APP)
             val delay = intent.getLongExtra(DELAY, 500L)
-            if (firstPackageName != null && firstClassName != null &&
-                secondPackageName != null && secondClassName != null
-            ) {
+            if (firstPackageName != null && firstClassName != null && secondPackageName != null && secondClassName != null) {
                 launchApp(
-                    packageName = firstPackageName,
-                    className = firstClassName,
-                    false
+                    packageName = firstPackageName, className = firstClassName, false
                 )
                 Handler(Looper.getMainLooper()).postDelayed({
                     launchApp(
-                        packageName = secondPackageName,
-                        className = secondClassName,
-                        true
+                        packageName = secondPackageName, className = secondClassName, true
                     )
                     finish()
                 }, delay)
             }
         } else {
-            val launchAdjacent = shouldLaunchAdjacent(
-                prefs = PreferenceManager.getDefaultSharedPreferences(this),
-                windowSizeClass = computeWindowSizeClass()
-            )
-            if (launchAdjacent) {
-                Intent(this, AppChooserActivity::class.java).run {
-                    addFlags(FLAG_ACTIVITY_NEW_TASK)
-                    startActivityCatchExceptions(this)
-                }
+            Intent(this, AppChooserActivity::class.java).run {
+                addFlags(FLAG_ACTIVITY_NEW_TASK)
+                startActivityCatchExceptions(this)
             }
             Handler(Looper.getMainLooper()).postDelayed({
-                launchApp(
-                    intent = intent,
-                    launchAdjacent = launchAdjacent
-                )
+                launchApp(intent = intent)
                 finish()
-            }, if (launchAdjacent) 500L else 0L)
+            }, 500L)
         }
     }
 
-    private fun launchApp(intent: Intent, launchAdjacent: Boolean) {
+    private fun launchApp(intent: Intent) {
         lifecycleScope.launch {
             if (ACTION_LAUNCH_APP == intent.action) {
                 intent.getStringExtra(PACKAGE_NAME)?.let { packageName ->
                     intent.getStringExtra(CLASS_NAME)?.let { className ->
                         launchApp(
-                            packageName = packageName,
-                            className = className,
-                            launchAdjacent = launchAdjacent
+                            packageName = packageName, className = className, launchAdjacent = true
                         )
                     }
                 }
@@ -93,20 +75,16 @@ class BeNiceActivity : ComponentActivity() {
 }
 
 fun Activity.launchApp(
-    packageName: String,
-    className: String,
-    launchAdjacent: Boolean
+    packageName: String, className: String, launchAdjacent: Boolean
 ) {
     Intent().run {
         component = ComponentName(
-            packageName,
-            className
+            packageName, className
         )
         addFlags(FLAG_ACTIVITY_NEW_TASK)
         if (launchAdjacent) {
             addFlags(
-                FLAG_ACTIVITY_LAUNCH_ADJACENT or
-                        FLAG_ACTIVITY_TASK_ON_HOME
+                FLAG_ACTIVITY_LAUNCH_ADJACENT or FLAG_ACTIVITY_TASK_ON_HOME
             )
         }
         startActivityCatchExceptions(this)
@@ -117,27 +95,22 @@ fun Context.createBeNiceLaunchIntent(appInfo: AppInfo) =
     Intent(this, BeNiceActivity::class.java).also { intent ->
         intent.action = ACTION_LAUNCH_APP
         intent.addFlags(
-            FLAG_ACTIVITY_NEW_TASK or
-                    FLAG_ACTIVITY_CLEAR_TASK
+            FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_CLEAR_TASK
         )
         intent.putExtra(PACKAGE_NAME, appInfo.packageName)
         intent.putExtra(CLASS_NAME, appInfo.className)
     }
 
 fun Context.createLaunchAppPairIntent(
-    firstApp: AppInfo,
-    secondApp: AppInfo,
-    delay: Long
-) =
-    Intent(this, BeNiceActivity::class.java).also { intent ->
-        intent.action = ACTION_LAUNCH_APP_PAIR
-        intent.addFlags(
-            FLAG_ACTIVITY_NEW_TASK or
-                    FLAG_ACTIVITY_CLEAR_TASK
-        )
-        intent.putExtra(PACKAGE_NAME_FIRST_APP, firstApp.packageName)
-        intent.putExtra(CLASS_NAME_FIRST_APP, firstApp.className)
-        intent.putExtra(PACKAGE_NAME_SECOND_APP, secondApp.packageName)
-        intent.putExtra(CLASS_NAME_SECOND_APP, secondApp.className)
-        intent.putExtra(DELAY, delay)
-    }
+    firstApp: AppInfo, secondApp: AppInfo, delay: Long
+) = Intent(this, BeNiceActivity::class.java).also { intent ->
+    intent.action = ACTION_LAUNCH_APP_PAIR
+    intent.addFlags(
+        FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_CLEAR_TASK
+    )
+    intent.putExtra(PACKAGE_NAME_FIRST_APP, firstApp.packageName)
+    intent.putExtra(CLASS_NAME_FIRST_APP, firstApp.className)
+    intent.putExtra(PACKAGE_NAME_SECOND_APP, secondApp.packageName)
+    intent.putExtra(CLASS_NAME_SECOND_APP, secondApp.className)
+    intent.putExtra(DELAY, delay)
+}
