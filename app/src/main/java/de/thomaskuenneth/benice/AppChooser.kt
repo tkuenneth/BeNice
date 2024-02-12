@@ -61,7 +61,7 @@ fun AppChooser(
             var last = ""
             var counter = 0
             installedApps.forEach { appInfo ->
-                appInfo.label.substring((0 until 1)).let { current ->
+                appInfo.label.ifEmpty { "?" }.substring((0 until 1)).let { current ->
                     if (current != last) {
                         last = current
                         header(key = counter++) {
@@ -116,7 +116,7 @@ fun AppChooserItem(
         AppIconImage(drawable = appInfo.icon)
         Spacer(modifier = Modifier.width(16.dp))
         Text(
-            text = appInfo.label,
+            text = appInfo.label.ifEmpty { stringResource(id = R.string.unknown) },
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.primary
         )
