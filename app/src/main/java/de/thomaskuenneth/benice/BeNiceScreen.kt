@@ -184,7 +184,7 @@ fun AppPairDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             Button(
-                enabled = label.isNotBlank() && firstApp != null && secondApp != null,
+                enabled = label.isNotBlank() && !label.isTooLong() && firstApp != null && secondApp != null,
                 onClick = { onFinished(firstApp!!, secondApp!!, delay.toLong(), label) }) {
                 Text(text = stringResource(id = R.string.create))
             }
@@ -252,7 +252,15 @@ fun AppPairDialog(
                         BeNiceTextField(
                             value = label,
                             resId = R.string.app_pair_label,
-                            message = if (label.isBlank()) stringResource(id = R.string.label_cannot_be_blank) else "",
+                            message = if (label.isBlank()) {
+                                stringResource(id = R.string.label_cannot_be_blank)
+                            } else {
+                                if (label.isTooLong()) {
+                                    stringResource(id = R.string.too_long)
+                                } else {
+                                    ""
+                                }
+                            },
                             keyboardType = KeyboardType.Text,
                             onValueChange = { label = it }
                         )
@@ -286,3 +294,5 @@ fun Activity.startActivityCatchExceptions(intent: Intent) {
 private const val UNSPECIFIED = "???"
 private fun label(firstApp: AppInfo?, secondApp: AppInfo?) =
     "${firstApp?.label ?: UNSPECIFIED} \u2011 ${secondApp?.label ?: UNSPECIFIED}"
+
+private fun String.isTooLong() = length > 64

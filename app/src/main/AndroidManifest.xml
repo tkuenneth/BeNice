@@ -31,6 +31,7 @@
 
         <activity
             android:name=".BeNiceActivity"
+            android:excludeFromRecents="true"
             android:exported="true">
             <intent-filter>
                 <action android:name="de.thomaskuenneth.benice.intent.action.ACTION_LAUNCH_APP" />

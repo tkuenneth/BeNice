@@ -27,4 +27,5 @@
     <string name="right">Right</string>
     <string name="letter_position">Letter position in app chooser</string>
     <string name="unknown">unknown</string>
+    <string name="too_long">The label is too long</string>
 </resources>

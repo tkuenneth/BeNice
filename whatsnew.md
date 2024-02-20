@@ -1,3 +1,3 @@
 # What's new
 
-- Fixed a crash related to activities with an empty label
+- Occasionally an unresponsive Be nice window could be visible in Recent Apps. This has been fixed. 
