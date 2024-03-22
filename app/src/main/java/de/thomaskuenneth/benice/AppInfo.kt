@@ -1,9 +1,11 @@
 package de.thomaskuenneth.benice
 
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
+import androidx.core.content.pm.PackageInfoCompat
 
 
 data class AppInfo(
@@ -33,4 +35,8 @@ fun installedApps(packageManager: PackageManager): List<AppInfo> {
             }
         }
     }
+}
+
+fun Context.appVersion(): String = with(packageManager.getPackageInfo(packageName, 0)) {
+    "$versionName (${PackageInfoCompat.getLongVersionCode(this)})"
 }

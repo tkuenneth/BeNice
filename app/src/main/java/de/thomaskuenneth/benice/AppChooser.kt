@@ -61,7 +61,7 @@ fun AppChooser(
             var last = ""
             var counter = 0
             installedApps.forEach { appInfo ->
-                appInfo.label.ifEmpty { "?" }.substring((0 until 1)).let { current ->
+                appInfo.label.ifEmpty { "?" }.substring((0 until 1)).uppercase().let { current ->
                     if (current != last) {
                         last = current
                         header(key = counter++) {
