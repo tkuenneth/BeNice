@@ -62,6 +62,7 @@ class AppChooserActivity : ComponentActivity() {
         enableEdgeToEdge()
         val viewModel by viewModels<BeNiceViewModel>()
         viewModel.setLetterPosition(prefs.getInt(KEY_LETTER_POSITION, 1))
+        viewModel.setAppVersionString(appVersionString = appVersion())
         windowSizeClass = computeWindowSizeClass()
         setContent {
             MaterialTheme(

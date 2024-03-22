@@ -14,7 +14,8 @@ import kotlinx.coroutines.launch
 data class BeNiceScreenUiState(
     val isLoading: Boolean = false,
     val installedApps: List<AppInfo> = emptyList(),
-    val letterPosition: Int = 1
+    val letterPosition: Int = 1,
+    val appVersionString: String = ""
 )
 
 class BeNiceViewModel : ViewModel() {
@@ -28,7 +29,7 @@ class BeNiceViewModel : ViewModel() {
             _uiState.update { currentState ->
                 currentState.copy(installedApps = installedApps(
                     packageManager = packageManager
-                ).sortedBy { it.label })
+                ).sortedBy { it.label.lowercase() })
             }
             setLoading(false)
         }
@@ -42,6 +43,14 @@ class BeNiceViewModel : ViewModel() {
         _uiState.update { currentState ->
             currentState.copy(
                 isLoading = isLoading
+            )
+        }
+    }
+
+    fun setAppVersionString(appVersionString: String) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                appVersionString = appVersionString
             )
         }
     }
