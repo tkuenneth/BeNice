@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
+import android.util.Patterns
 import androidx.core.content.pm.PackageInfoCompat
 
 
@@ -39,4 +40,8 @@ fun installedApps(packageManager: PackageManager): List<AppInfo> {
 
 fun Context.appVersion(): String = with(packageManager.getPackageInfo(packageName, 0)) {
     "$versionName (${PackageInfoCompat.getLongVersionCode(this)})"
+}
+
+fun String.isValidUrl(): Boolean {
+    return Patterns.WEB_URL.matcher(this).matches()
 }

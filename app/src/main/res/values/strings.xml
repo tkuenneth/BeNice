@@ -11,6 +11,7 @@
     <string name="create_app_pair">Create app pair</string>
     <string name="create">Create</string>
     <string name="cancel">Cancel</string>
+    <string name="done">Done</string>
     <string name="select_first_app">Select first app</string>
     <string name="select_second_app">Select second app</string>
     <string name="launch_after">Launch second app after</string>
@@ -28,4 +29,6 @@
     <string name="letter_position">Letter position in app chooser</string>
     <string name="unknown">unknown</string>
     <string name="too_long">The label is too long</string>
+    <string name="open_url">Open in browser</string>
+    <string name="hint_https">https://…</string>
 </resources>
