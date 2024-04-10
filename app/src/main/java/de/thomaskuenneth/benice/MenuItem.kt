@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
@@ -20,6 +21,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun MenuItem(
+    enabled: Boolean = true,
     onClick: () -> Unit,
     imageVector: ImageVector,
     @StringRes textRes: Int
@@ -28,10 +30,15 @@ fun MenuItem(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {
-                onClick()
-            }
+            .then(if (enabled) {
+                Modifier.clickable {
+                    onClick()
+                }
+            } else {
+                Modifier
+            })
             .padding(all = 16.dp)
+            .alpha(if (enabled) 1.0F else 0.6F)
     ) {
         Image(
             imageVector = imageVector,
