@@ -8,11 +8,14 @@ import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.Intent.FLAG_ACTIVITY_TASK_ON_HOME
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+
+const val MIME_TYPE_URL = "text/uri-list"
 
 private const val ACTION_LAUNCH_APP = "de.thomaskuenneth.benice.intent.action.ACTION_LAUNCH_APP"
 private const val PACKAGE_NAME = "packageName"
@@ -78,9 +81,15 @@ fun Activity.launchApp(
     packageName: String, className: String, launchAdjacent: Boolean
 ) {
     Intent().run {
-        component = ComponentName(
-            packageName, className
-        )
+        if (MIME_TYPE_URL != packageName) {
+            component = ComponentName(
+                packageName, className
+            )
+        }
+        else {
+            action = Intent.ACTION_VIEW
+            data = Uri.parse(className)
+        }
         addFlags(FLAG_ACTIVITY_NEW_TASK)
         if (launchAdjacent) {
             addFlags(

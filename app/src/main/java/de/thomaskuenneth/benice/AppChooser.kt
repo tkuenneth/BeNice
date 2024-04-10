@@ -42,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
@@ -49,6 +50,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.content.res.ResourcesCompat
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -61,7 +63,21 @@ fun AppChooser(
     onClick: (AppInfo) -> Unit,
     onLongClick: (AppInfo) -> Unit
 ) {
-    val onDone: (String) -> Unit = { url -> }
+    val context = LocalContext.current
+    val onDone: (String) -> Unit = { url ->
+        onClick(
+            AppInfo(
+                packageName = MIME_TYPE_URL,
+                className = url,
+                label = url.createLabelFromURL(context.getString(R.string.open_url)),
+                icon = ResourcesCompat.getDrawable(
+                    context.resources,
+                    R.drawable.baseline_open_in_browser_24,
+                    context.theme
+                )!!
+            )
+        )
+    }
     val haptics = LocalHapticFeedback.current
     if (installedApps.isEmpty()) {
         Text(
@@ -217,6 +233,10 @@ fun OpenInBrowserMenuItem(onDone: (String) -> Unit) {
     var url by remember { mutableStateOf("") }
     val isTextValid by remember { derivedStateOf { url.isValidUrl() } }
     val focusRequester = remember { FocusRequester() }
+    val done = {
+        isEditing = false
+        onDone(url)
+    }
     Column {
         MenuItem(
             enabled = !isEditing,
@@ -244,7 +264,7 @@ fun OpenInBrowserMenuItem(onDone: (String) -> Unit) {
                         url = it
                     },
                     keyboardActions = KeyboardActions(onAny = {
-                        isEditing = false
+                        if (isTextValid) done()
                     }),
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Uri,
@@ -261,8 +281,7 @@ fun OpenInBrowserMenuItem(onDone: (String) -> Unit) {
                     TextButton(
                         enabled = isTextValid,
                         onClick = {
-                            isEditing = false
-                            onDone(url)
+                            done()
                         }
                     ) {
                         Text(text = stringResource(id = R.string.done))
