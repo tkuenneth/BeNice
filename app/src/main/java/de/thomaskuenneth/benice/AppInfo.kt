@@ -45,3 +45,6 @@ fun Context.appVersion(): String = with(packageManager.getPackageInfo(packageNam
 fun String.isValidUrl(): Boolean {
     return Patterns.WEB_URL.matcher(this).matches()
 }
+
+fun sameApp(app1: AppInfo?, app2: AppInfo?): Boolean =
+    (app1?.packageName ?: "") == (app2?.packageName ?: "")

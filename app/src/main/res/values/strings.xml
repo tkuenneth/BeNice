@@ -31,4 +31,5 @@
     <string name="too_long">The label is too long</string>
     <string name="open_url">Open in browser</string>
     <string name="hint_https">https://…</string>
+    <string name="apps_must_be_different">Please choose two different apps</string>
 </resources>

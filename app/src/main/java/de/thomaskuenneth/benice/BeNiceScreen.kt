@@ -85,6 +85,7 @@ fun BeNiceScreen(
                     else -> 1
                 },
                 letterPosition = state.letterPosition,
+                showOpenInBrowser = false,
                 onClick = onClick,
                 onLongClick = { appInfo ->
                     contextMenuAppInfo = appInfo
@@ -171,6 +172,8 @@ fun AppPairDialog(
 ) {
     var firstApp: AppInfo? by remember { mutableStateOf(null) }
     var secondApp: AppInfo? by remember { mutableStateOf(null) }
+    val sameApp: Boolean by remember(firstApp, secondApp) { mutableStateOf( sameApp(firstApp, secondApp)) }
+    val bothAppsChosen: Boolean by remember(firstApp, secondApp) { mutableStateOf(firstApp != null && secondApp != null) }
     var delay by remember { mutableFloatStateOf(500F) }
     var label by remember(firstApp, secondApp) {
         mutableStateOf(
@@ -184,7 +187,7 @@ fun AppPairDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             Button(
-                enabled = label.isNotBlank() && !label.isTooLong() && firstApp != null && secondApp != null,
+                enabled = label.isNotBlank() && !label.isTooLong() && bothAppsChosen && !sameApp,
                 onClick = { onFinished(firstApp!!, secondApp!!, delay.toLong(), label) }) {
                 Text(text = stringResource(id = R.string.create))
             }
@@ -225,6 +228,14 @@ fun AppPairDialog(
                             label(firstApp = firstApp, secondApp = secondApp)
                         }
                     )
+                    if (bothAppsChosen && sameApp) {
+                        Text(
+                            modifier = Modifier.align(Alignment.Start),
+                            text = stringResource(id = R.string.apps_must_be_different),
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
                     Text(
                         modifier = Modifier.padding(top = 16.dp),
                         text = stringResource(id = R.string.launch_after),

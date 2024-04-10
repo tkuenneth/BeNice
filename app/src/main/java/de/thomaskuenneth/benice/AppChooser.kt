@@ -57,6 +57,7 @@ fun AppChooser(
     installedApps: List<AppInfo>,
     columns: Int,
     letterPosition: Int,
+    showOpenInBrowser: Boolean,
     onClick: (AppInfo) -> Unit,
     onLongClick: (AppInfo) -> Unit
 ) {
@@ -75,8 +76,10 @@ fun AppChooser(
         ) {
             var last = ""
             var counter = 0
-            item {
-                OpenInBrowserMenuItem(onDone = onDone)
+            if (showOpenInBrowser) {
+                item {
+                    OpenInBrowserMenuItem(onDone = onDone)
+                }
             }
             installedApps.forEach { appInfo ->
                 appInfo.label.ifEmpty { "?" }.substring((0 until 1)).uppercase().let { current ->
@@ -160,6 +163,7 @@ fun AppChooserDialog(
                 installedApps = installedApps,
                 columns = 1,
                 letterPosition = letterPosition,
+                showOpenInBrowser = true,
                 onClick = onClick,
                 onLongClick = {})
         }
