@@ -11,7 +11,7 @@ android {
         applicationId = "de.thomaskuenneth.benice"
         minSdk = 26
         targetSdk = 34
-        versionCode = 24
+        versionCode = 25
         versionName = "1.1.8"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
