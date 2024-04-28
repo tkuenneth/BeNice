@@ -41,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -63,6 +64,7 @@ fun AppChooser(
     onClick: (AppInfo) -> Unit,
     onLongClick: (AppInfo) -> Unit
 ) {
+    val iconColir = MaterialTheme.colorScheme.primary.toArgb()
     val context = LocalContext.current
     val onDone: (String) -> Unit = { url ->
         onClick(
@@ -74,7 +76,9 @@ fun AppChooser(
                     context.resources,
                     R.drawable.baseline_open_in_browser_24,
                     context.theme
-                )!!
+                )!!.also {
+                    it.setTint(iconColir)
+                }
             )
         )
     }
