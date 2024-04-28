@@ -1,3 +1,5 @@
 # What's new
 
-- Open any web address as one part of an app pair 
+- Added a Quick settings tile
+- Updated some tools and libraries
+- Minor bugfix: in the app chooser dialog, the color for the "open in browser" icon was always black
