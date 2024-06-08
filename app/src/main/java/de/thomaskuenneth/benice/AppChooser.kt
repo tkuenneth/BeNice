@@ -1,14 +1,14 @@
 package de.thomaskuenneth.benice
 
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import androidx.annotation.StringRes
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,34 +20,22 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -62,11 +50,12 @@ fun AppChooser(
     letterPosition: Int,
     showOpenInBrowser: Boolean,
     onClick: (AppInfo) -> Unit,
-    onLongClick: (AppInfo) -> Unit
+    onLongClick: (AppInfo) -> Unit,
+    selectImage: ((Bitmap?) -> Unit) -> Unit
 ) {
-    val iconColir = MaterialTheme.colorScheme.primary.toArgb()
+    val iconColor = MaterialTheme.colorScheme.primary.toArgb()
     val context = LocalContext.current
-    val onDone: (String) -> Unit = { url ->
+    val onDoneUrl: (String) -> Unit = { url ->
         onClick(
             AppInfo(
                 packageName = MIME_TYPE_URL,
@@ -77,8 +66,18 @@ fun AppChooser(
                     R.drawable.baseline_open_in_browser_24,
                     context.theme
                 )!!.also {
-                    it.setTint(iconColir)
+                    it.setTint(iconColor)
                 }
+            )
+        )
+    }
+    val onDoneImage: (Drawable, String) -> Unit = { drawable, image ->
+        onClick(
+            AppInfo(
+                packageName = MIME_TYPE_IMAGE,
+                className = image,
+                label = context.getString(R.string.image),
+                icon = drawable
             )
         )
     }
@@ -98,7 +97,13 @@ fun AppChooser(
             var counter = 0
             if (showOpenInBrowser) {
                 item {
-                    OpenInBrowserMenuItem(onDone = onDone)
+                    OpenInBrowserMenuItem(onDone = onDoneUrl)
+                }
+                item {
+                    ShowImageMenuItem(
+                        selectImage = selectImage,
+                        onDone = onDoneImage
+                    )
                 }
             }
             installedApps.forEach { appInfo ->
@@ -169,7 +174,8 @@ fun AppChooserDialog(
     installedApps: List<AppInfo>,
     letterPosition: Int,
     onClick: (AppInfo) -> Unit,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
+    selectImage: ((Bitmap?) -> Unit) -> Unit
 ) {
     Dialog(
         onDismissRequest = onDismissRequest
@@ -185,7 +191,9 @@ fun AppChooserDialog(
                 letterPosition = letterPosition,
                 showOpenInBrowser = true,
                 onClick = onClick,
-                onLongClick = {})
+                onLongClick = {},
+                selectImage = selectImage
+            )
         }
     }
 }
@@ -196,7 +204,8 @@ fun CompactAppChooser(
     letterPosition: Int,
     selectedApp: AppInfo?,
     @StringRes hint: Int,
-    onItemClicked: (AppInfo) -> Unit
+    onItemClicked: (AppInfo) -> Unit,
+    selectImage: ((Bitmap?) -> Unit) -> Unit,
 ) {
     var appChooserDialogOpen by remember { mutableStateOf(false) }
     Box(
@@ -227,74 +236,8 @@ fun CompactAppChooser(
             },
             onDismissRequest = {
                 appChooserDialogOpen = false
-            })
-    }
-}
-
-@Composable
-fun OpenInBrowserMenuItem(onDone: (String) -> Unit) {
-    var isEditing by remember { mutableStateOf(false) }
-    var url by remember { mutableStateOf("") }
-    val isTextValid by remember { derivedStateOf { url.isValidUrl() } }
-    val focusRequester = remember { FocusRequester() }
-    val done = {
-        isEditing = false
-        onDone(url)
-    }
-    Column {
-        MenuItem(
-            enabled = !isEditing,
-            onClick = {
-                url = ""
-                isEditing = true
             },
-            imageVector = Icons.Default.OpenInBrowser,
-            textRes = R.string.open_url
+            selectImage = selectImage
         )
-        AnimatedVisibility(visible = isEditing) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            ) {
-                OutlinedTextField(
-                    value = url,
-                    singleLine = true,
-                    placeholder = { Text(text = stringResource(id = R.string.hint_https)) },
-                    modifier = Modifier
-                        .focusRequester(focusRequester)
-                        .fillMaxWidth(),
-                    onValueChange = {
-                        url = it
-                    },
-                    keyboardActions = KeyboardActions(onAny = {
-                        if (isTextValid) done()
-                    }),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Uri,
-                        imeAction = ImeAction.Done
-                    ),
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(onClick = { isEditing = false }) {
-                        Text(text = stringResource(id = R.string.cancel))
-                    }
-                    TextButton(
-                        enabled = isTextValid,
-                        onClick = {
-                            done()
-                        }
-                    ) {
-                        Text(text = stringResource(id = R.string.done))
-                    }
-                }
-            }
-        }
-        LaunchedEffect(key1 = isEditing) {
-            if (isEditing) focusRequester.requestFocus()
-        }
     }
 }

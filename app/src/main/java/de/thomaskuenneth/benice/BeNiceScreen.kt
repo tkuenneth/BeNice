@@ -2,6 +2,7 @@ package de.thomaskuenneth.benice
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -55,6 +56,7 @@ fun BeNiceScreen(
     onAddLinkClicked: (AppInfo) -> Unit,
     onOpenAppInfoClicked: (AppInfo) -> Unit,
     onAppsForAppPairSelected: (AppInfo, AppInfo, Long, String) -> Unit,
+    selectImage: ((Bitmap?) -> Unit) -> Unit,
     modifier: Modifier
 ) {
     var contextMenuAppInfo by remember { mutableStateOf<AppInfo?>(null) }
@@ -89,7 +91,8 @@ fun BeNiceScreen(
                 onClick = onClick,
                 onLongClick = { appInfo ->
                     contextMenuAppInfo = appInfo
-                }
+                },
+                selectImage = selectImage
             )
             FloatingActionButton(
                 onClick = { showAppPairDialog = true },
@@ -149,7 +152,8 @@ fun BeNiceScreen(
             },
             onDismissRequest = {
                 showSelectSecondAppDialog = false
-            }
+            },
+            selectImage = selectImage
         )
     }
     if (showAppPairDialog) {
@@ -159,7 +163,8 @@ fun BeNiceScreen(
             onFinished = { first, second, delay, label ->
                 onAppsForAppPairSelected(first, second, delay, label)
                 showAppPairDialog = false
-            }
+            },
+            selectImage = selectImage
         )
     }
 }
@@ -168,12 +173,23 @@ fun BeNiceScreen(
 fun AppPairDialog(
     state: BeNiceScreenUiState,
     onDismissRequest: () -> Unit,
-    onFinished: (AppInfo, AppInfo, Long, String) -> Unit
+    onFinished: (AppInfo, AppInfo, Long, String) -> Unit,
+    selectImage: ((Bitmap?) -> Unit) -> Unit
 ) {
     var firstApp: AppInfo? by remember { mutableStateOf(null) }
     var secondApp: AppInfo? by remember { mutableStateOf(null) }
-    val sameApp: Boolean by remember(firstApp, secondApp) { mutableStateOf( sameApp(firstApp, secondApp)) }
-    val bothAppsChosen: Boolean by remember(firstApp, secondApp) { mutableStateOf(firstApp != null && secondApp != null) }
+    val sameApp: Boolean by remember(firstApp, secondApp) {
+        mutableStateOf(
+            sameApp(
+                firstApp,
+                secondApp
+            )
+        )
+    }
+    val bothAppsChosen: Boolean by remember(
+        firstApp,
+        secondApp
+    ) { mutableStateOf(firstApp != null && secondApp != null) }
     var delay by remember { mutableFloatStateOf(500F) }
     var label by remember(firstApp, secondApp) {
         mutableStateOf(
@@ -216,7 +232,8 @@ fun AppPairDialog(
                         onItemClicked = { selectedApp ->
                             firstApp = selectedApp
                             label(firstApp = firstApp, secondApp = secondApp)
-                        }
+                        },
+                        selectImage = selectImage
                     )
                     CompactAppChooser(
                         installedApps = state.installedApps,
@@ -226,7 +243,8 @@ fun AppPairDialog(
                         onItemClicked = { selectedApp ->
                             secondApp = selectedApp
                             label(firstApp = firstApp, secondApp = secondApp)
-                        }
+                        },
+                        selectImage = selectImage
                     )
                     if (bothAppsChosen && sameApp) {
                         Text(

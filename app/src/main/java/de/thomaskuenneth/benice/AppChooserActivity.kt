@@ -11,6 +11,7 @@ import android.content.pm.ShortcutManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.ImageDecoder
 import android.graphics.Paint
 import android.graphics.drawable.Icon
 import android.net.Uri
@@ -18,15 +19,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,9 +46,13 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.layout.WindowMetricsCalculator
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.launch
 
 private const val KEY_LETTER_POSITION = "letterPosition"
 
@@ -56,6 +61,16 @@ class AppChooserActivity : ComponentActivity() {
     private lateinit var shortcutManager: ShortcutManager
     private lateinit var prefs: SharedPreferences
     private lateinit var windowSizeClass: WindowSizeClass
+
+    private val channel = Channel<Uri?>()
+    private val _selectedImageUri = channel.receiveAsFlow()
+    private val launcher: ActivityResultLauncher<PickVisualMediaRequest> =
+        registerForActivityResult(ActivityResultContracts.PickVisualMedia())
+        { uri ->
+            lifecycleScope.launch {
+                channel.send(uri)
+            }
+        }
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -105,8 +120,6 @@ class AppChooserActivity : ComponentActivity() {
                     bottomBar = { Spacer(modifier = Modifier.height(0.dp)) },
                     modifier = Modifier
                         .nestedScroll(scrollBehavior.nestedScrollConnection)
-                        .background(color = MaterialTheme.colorScheme.background)
-                        .windowInsetsPadding(WindowInsets.displayCutout),
                 ) { paddingValues ->
                     BeNiceScreen(
                         windowSizeClass = windowSizeClass,
@@ -115,6 +128,7 @@ class AppChooserActivity : ComponentActivity() {
                         onAddLinkClicked = ::onAddLinkClicked,
                         onOpenAppInfoClicked = ::onOpenAppInfoClicked,
                         onAppsForAppPairSelected = ::onAppsForAppPairSelected,
+                        selectImage = ::selectImage,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(paddingValues = paddingValues)
@@ -176,6 +190,29 @@ class AppChooserActivity : ComponentActivity() {
                 .setIntent(createLaunchAppPairIntent(firstApp, secondApp, delay)).build()
             shortcutManager.requestPinShortcut(shortcutInfo, null)
         }
+    }
+
+    private fun selectImage(imageSelected: (Bitmap?) -> Unit) {
+        lifecycleScope.launch {
+            _selectedImageUri.collect { uri ->
+                imageSelected(if (uri == null) {
+                    null
+                } else {
+                    val source = ImageDecoder.createSource(
+                        contentResolver,
+                        uri
+                    )
+                    ImageDecoder.decodeBitmap(
+                        source
+                    ) { decoder, _, _ ->
+                        decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+                        decoder.isMutableRequired = true
+                    }
+                }
+                )
+            }
+        }
+        launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
 }
 

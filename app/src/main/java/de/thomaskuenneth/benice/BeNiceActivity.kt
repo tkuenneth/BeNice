@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
 const val MIME_TYPE_URL = "text/uri-list"
+const val MIME_TYPE_IMAGE = "image/*"
 
 private const val ACTION_LAUNCH_APP = "de.thomaskuenneth.benice.intent.action.ACTION_LAUNCH_APP"
 private const val PACKAGE_NAME = "packageName"
