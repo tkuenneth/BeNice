@@ -29,6 +29,14 @@
         </activity>
 
         <activity
+            android:name=".ImageViewerActivity"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.QUICK_VIEW" />
+            </intent-filter>
+        </activity>
+
+        <activity
             android:name=".BeNiceActivity"
             android:excludeFromRecents="true"
             android:exported="true">

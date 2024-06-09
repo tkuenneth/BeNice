@@ -82,14 +82,23 @@ fun Activity.launchApp(
     packageName: String, className: String, launchAdjacent: Boolean
 ) {
     Intent().run {
-        if (MIME_TYPE_URL != packageName) {
-            component = ComponentName(
-                packageName, className
-            )
-        }
-        else {
-            action = Intent.ACTION_VIEW
-            data = Uri.parse(className)
+        when (packageName) {
+            MIME_TYPE_URL -> {
+                action = Intent.ACTION_VIEW
+                data = Uri.parse(className)
+            }
+
+            MIME_TYPE_IMAGE -> {
+                component = ComponentName(this@launchApp, ImageViewerActivity::class.java)
+                action = Intent.ACTION_VIEW
+                setDataAndType(Uri.parse(className), MIME_TYPE_IMAGE)
+            }
+
+            else -> {
+                component = ComponentName(
+                    packageName, className
+                )
+            }
         }
         addFlags(FLAG_ACTIVITY_NEW_TASK)
         if (launchAdjacent) {

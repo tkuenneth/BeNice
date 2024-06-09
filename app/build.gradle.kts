@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
@@ -41,7 +42,6 @@ android {
         buildConfig = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.9"
     }
     packaging {
         resources {
@@ -67,9 +67,12 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.0")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.preference:preference-ktx:1.2.1")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.1")
 
     implementation("androidx.window:window-core:1.3.0")
     implementation("androidx.window:window:1.3.0")
+
+    implementation("io.coil-kt:coil-compose:2.5.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

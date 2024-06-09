@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
 import android.content.SharedPreferences
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
@@ -46,13 +47,10 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.layout.WindowMetricsCalculator
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.launch
 
 private const val KEY_LETTER_POSITION = "letterPosition"
 
@@ -61,20 +59,34 @@ class AppChooserActivity : ComponentActivity() {
     private lateinit var shortcutManager: ShortcutManager
     private lateinit var prefs: SharedPreferences
     private lateinit var windowSizeClass: WindowSizeClass
+    private lateinit var viewModel: ShowImageMenuItemViewModel
 
-    private val channel = Channel<Uri?>()
-    private val _selectedImageUri = channel.receiveAsFlow()
     private val launcher: ActivityResultLauncher<PickVisualMediaRequest> =
-        registerForActivityResult(ActivityResultContracts.PickVisualMedia())
-        { uri ->
-            lifecycleScope.launch {
-                channel.send(uri)
-            }
+        registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            viewModel.setUri(uri)
+            viewModel.setBitmap(if (uri == null) {
+                null
+            } else {
+                contentResolver.takePersistableUriPermission(
+                    uri,
+                    FLAG_GRANT_READ_URI_PERMISSION
+                )
+                val source = ImageDecoder.createSource(
+                    contentResolver, uri
+                )
+                ImageDecoder.decodeBitmap(
+                    source
+                ) { decoder, _, _ ->
+                    decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+                    decoder.isMutableRequired = true
+                }
+            })
         }
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        viewModel = ViewModelProvider(this)[ShowImageMenuItemViewModel::class.java]
         shortcutManager = getSystemService(ShortcutManager::class.java)
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
         enableEdgeToEdge()
@@ -91,7 +103,6 @@ class AppChooserActivity : ComponentActivity() {
                 var settingsOpen by remember { mutableStateOf(false) }
                 Scaffold(
                     topBar = {
-//                        var moreOpen by remember { mutableStateOf(false) }
                         TopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) },
                             scrollBehavior = scrollBehavior,
                             actions = {
@@ -100,26 +111,11 @@ class AppChooserActivity : ComponentActivity() {
                                     imageVector = Icons.Default.Settings,
                                     contentDescription = stringResource(id = R.string.settings)
                                 )
-//                                val menuItems = mutableListOf<@Composable () -> Unit>()
-//                                if (menuItems.isNotEmpty()) {
-//                                    IconButtonWithTooltip(
-//                                        onClick = { moreOpen = true },
-//                                        imageVector = Icons.Default.MoreVert,
-//                                        contentDescription = stringResource(id = R.string.more_vert)
-//                                    )
-//                                    DropdownMenu(
-//                                        expanded = moreOpen,
-//                                        onDismissRequest = { moreOpen = false }
-//                                    ) {
-//                                        menuItems.forEach { item -> item() }
-//                                    }
-//                                }
                             })
                     },
                     // currently necessary to achieve edge to edge at the bottom
                     bottomBar = { Spacer(modifier = Modifier.height(0.dp)) },
-                    modifier = Modifier
-                        .nestedScroll(scrollBehavior.nestedScrollConnection)
+                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
                 ) { paddingValues ->
                     BeNiceScreen(
                         windowSizeClass = windowSizeClass,
@@ -134,14 +130,10 @@ class AppChooserActivity : ComponentActivity() {
                             .padding(paddingValues = paddingValues)
                             .background(color = MaterialTheme.colorScheme.background)
                     )
-                    SettingsScreen(
-                        isOpen = settingsOpen,
-                        viewModel = viewModel,
-                        sheetClosed = {
-                            settingsOpen = false
-                            prefs.edit().putInt(KEY_LETTER_POSITION, state.letterPosition).apply()
-                        }
-                    )
+                    SettingsScreen(isOpen = settingsOpen, viewModel = viewModel, sheetClosed = {
+                        settingsOpen = false
+                        prefs.edit().putInt(KEY_LETTER_POSITION, state.letterPosition).apply()
+                    })
                 }
             }
         }
@@ -186,32 +178,13 @@ class AppChooserActivity : ComponentActivity() {
                         firstApp = firstApp, secondApp = secondApp
                     )
                 )
-            ).setShortLabel(label)
-                .setIntent(createLaunchAppPairIntent(firstApp, secondApp, delay)).build()
+            ).setShortLabel(label).setIntent(createLaunchAppPairIntent(firstApp, secondApp, delay))
+                .build()
             shortcutManager.requestPinShortcut(shortcutInfo, null)
         }
     }
 
-    private fun selectImage(imageSelected: (Bitmap?) -> Unit) {
-        lifecycleScope.launch {
-            _selectedImageUri.collect { uri ->
-                imageSelected(if (uri == null) {
-                    null
-                } else {
-                    val source = ImageDecoder.createSource(
-                        contentResolver,
-                        uri
-                    )
-                    ImageDecoder.decodeBitmap(
-                        source
-                    ) { decoder, _, _ ->
-                        decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-                        decoder.isMutableRequired = true
-                    }
-                }
-                )
-            }
-        }
+    private fun selectImage() {
         launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
 }

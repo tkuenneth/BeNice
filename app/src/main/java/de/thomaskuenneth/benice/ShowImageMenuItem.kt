@@ -1,35 +1,34 @@
 package de.thomaskuenneth.benice
 
 import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
-import androidx.compose.foundation.layout.Column
+import android.net.Uri
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
-import androidx.core.graphics.drawable.DrawableCompat
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun ShowImageMenuItem(
-    selectImage: ((Bitmap?) -> Unit) -> Unit,
-    onDone: (Drawable, String) -> Unit
+    selectBitmap: () -> Unit,
+    bitmapSelected: (Bitmap?, Uri?) -> Unit,
+    viewModel: ShowImageMenuItemViewModel = viewModel(ShowImageMenuItemViewModel::class.java)
 ) {
-    val resources = LocalContext.current.resources
-    Column {
-        MenuItem(
-            onClick = {
-                selectImage { it ?.let { bitmap ->
-                    println("===> Hello")
-                    onDone(
-                        BitmapDrawable(resources, bitmap),
-                        "Hello"
-                    )
-                }
-                }
-            },
-            imageVector = Icons.Default.Image,
-            textRes = R.string.show_image
-        )
+    val scope = rememberCoroutineScope()
+    LaunchedEffect(key1 = Unit) {
+        scope.launch {
+            viewModel.bitmap.collect {
+                bitmapSelected(it, viewModel.uri.value)
+            }
+        }
     }
+    MenuItem(
+        onClick = {
+            selectBitmap()
+        },
+        imageVector = Icons.Default.Image,
+        textRes = R.string.show_image
+    )
 }

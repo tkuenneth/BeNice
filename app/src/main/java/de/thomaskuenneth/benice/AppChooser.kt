@@ -1,7 +1,6 @@
 package de.thomaskuenneth.benice
 
-import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
+import android.graphics.drawable.BitmapDrawable
 import androidx.annotation.StringRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -48,10 +47,10 @@ fun AppChooser(
     installedApps: List<AppInfo>,
     columns: Int,
     letterPosition: Int,
-    showOpenInBrowser: Boolean,
+    showSpecials: Boolean,
     onClick: (AppInfo) -> Unit,
     onLongClick: (AppInfo) -> Unit,
-    selectImage: ((Bitmap?) -> Unit) -> Unit
+    selectImage: () -> Unit
 ) {
     val iconColor = MaterialTheme.colorScheme.primary.toArgb()
     val context = LocalContext.current
@@ -71,16 +70,6 @@ fun AppChooser(
             )
         )
     }
-    val onDoneImage: (Drawable, String) -> Unit = { drawable, image ->
-        onClick(
-            AppInfo(
-                packageName = MIME_TYPE_IMAGE,
-                className = image,
-                label = context.getString(R.string.image),
-                icon = drawable
-            )
-        )
-    }
     val haptics = LocalHapticFeedback.current
     if (installedApps.isEmpty()) {
         Text(
@@ -95,14 +84,26 @@ fun AppChooser(
         ) {
             var last = ""
             var counter = 0
-            if (showOpenInBrowser) {
+            if (showSpecials) {
                 item {
                     OpenInBrowserMenuItem(onDone = onDoneUrl)
                 }
                 item {
                     ShowImageMenuItem(
-                        selectImage = selectImage,
-                        onDone = onDoneImage
+                        selectBitmap = selectImage,
+                        bitmapSelected = { bitmap, uri ->
+                            bitmap?.run {
+                                val drawable = BitmapDrawable(context.resources, bitmap)
+                                onClick(
+                                    AppInfo(
+                                        packageName = MIME_TYPE_IMAGE,
+                                        className = uri.toString(),
+                                        label = context.getString(R.string.image),
+                                        icon = drawable
+                                    )
+                                )
+                            }
+                        }
                     )
                 }
             }
@@ -171,29 +172,32 @@ fun AppChooserItem(
 
 @Composable
 fun AppChooserDialog(
+    isVisible: Boolean,
     installedApps: List<AppInfo>,
     letterPosition: Int,
     onClick: (AppInfo) -> Unit,
     onDismissRequest: () -> Unit,
-    selectImage: ((Bitmap?) -> Unit) -> Unit
+    selectImage: () -> Unit
 ) {
-    Dialog(
-        onDismissRequest = onDismissRequest
-    ) {
-        Surface(
-            color = MaterialTheme.colorScheme.surface,
-            shadowElevation = 4.dp,
-            shape = RoundedCornerShape(size = 12.dp)
+    if (isVisible) {
+        Dialog(
+            onDismissRequest = onDismissRequest
         ) {
-            AppChooser(
-                installedApps = installedApps,
-                columns = 1,
-                letterPosition = letterPosition,
-                showOpenInBrowser = true,
-                onClick = onClick,
-                onLongClick = {},
-                selectImage = selectImage
-            )
+            Surface(
+                color = MaterialTheme.colorScheme.surface,
+                shadowElevation = 4.dp,
+                shape = RoundedCornerShape(size = 12.dp)
+            ) {
+                AppChooser(
+                    installedApps = installedApps,
+                    columns = 1,
+                    letterPosition = letterPosition,
+                    showSpecials = true,
+                    onClick = onClick,
+                    onLongClick = {},
+                    selectImage = selectImage
+                )
+            }
         }
     }
 }
@@ -205,7 +209,7 @@ fun CompactAppChooser(
     selectedApp: AppInfo?,
     @StringRes hint: Int,
     onItemClicked: (AppInfo) -> Unit,
-    selectImage: ((Bitmap?) -> Unit) -> Unit,
+    selectImage: () -> Unit,
 ) {
     var appChooserDialogOpen by remember { mutableStateOf(false) }
     Box(
@@ -226,18 +230,17 @@ fun CompactAppChooser(
             }
         }
     }
-    if (appChooserDialogOpen) {
-        AppChooserDialog(
-            installedApps = installedApps,
-            letterPosition = letterPosition,
-            onClick = { appInfo ->
-                appChooserDialogOpen = false
-                onItemClicked(appInfo)
-            },
-            onDismissRequest = {
-                appChooserDialogOpen = false
-            },
-            selectImage = selectImage
-        )
-    }
+    AppChooserDialog(
+        isVisible = appChooserDialogOpen,
+        installedApps = installedApps,
+        letterPosition = letterPosition,
+        onClick = { appInfo ->
+            appChooserDialogOpen = false
+            onItemClicked(appInfo)
+        },
+        onDismissRequest = {
+            appChooserDialogOpen = false
+        },
+        selectImage = selectImage
+    )
 }

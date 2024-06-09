@@ -2,7 +2,6 @@ package de.thomaskuenneth.benice
 
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -51,12 +50,11 @@ import kotlinx.coroutines.launch
 @Composable
 fun BeNiceScreen(
     windowSizeClass: WindowSizeClass,
-    state: BeNiceScreenUiState,
-    onClick: (AppInfo) -> Unit,
+    state: BeNiceScreenUiState, onClick: (AppInfo) -> Unit,
     onAddLinkClicked: (AppInfo) -> Unit,
     onOpenAppInfoClicked: (AppInfo) -> Unit,
     onAppsForAppPairSelected: (AppInfo, AppInfo, Long, String) -> Unit,
-    selectImage: ((Bitmap?) -> Unit) -> Unit,
+    selectImage: () -> Unit,
     modifier: Modifier
 ) {
     var contextMenuAppInfo by remember { mutableStateOf<AppInfo?>(null) }
@@ -87,7 +85,7 @@ fun BeNiceScreen(
                     else -> 1
                 },
                 letterPosition = state.letterPosition,
-                showOpenInBrowser = false,
+                showSpecials = false,
                 onClick = onClick,
                 onLongClick = { appInfo ->
                     contextMenuAppInfo = appInfo
@@ -140,8 +138,8 @@ fun BeNiceScreen(
             )
         }
     }
-    if (showSelectSecondAppDialog) {
         AppChooserDialog(
+            isVisible = showSelectSecondAppDialog,
             installedApps = state.installedApps,
             letterPosition = state.letterPosition,
             onClick = { secondApp ->
@@ -155,7 +153,6 @@ fun BeNiceScreen(
             },
             selectImage = selectImage
         )
-    }
     if (showAppPairDialog) {
         AppPairDialog(
             state = state,
@@ -174,7 +171,7 @@ fun AppPairDialog(
     state: BeNiceScreenUiState,
     onDismissRequest: () -> Unit,
     onFinished: (AppInfo, AppInfo, Long, String) -> Unit,
-    selectImage: ((Bitmap?) -> Unit) -> Unit
+    selectImage: () -> Unit
 ) {
     var firstApp: AppInfo? by remember { mutableStateOf(null) }
     var secondApp: AppInfo? by remember { mutableStateOf(null) }
@@ -224,17 +221,17 @@ fun AppPairDialog(
                     modifier = Modifier.verticalScroll(scrollState),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    CompactAppChooser(
-                        installedApps = state.installedApps,
-                        letterPosition = state.letterPosition,
-                        selectedApp = firstApp,
-                        hint = R.string.select_first_app,
-                        onItemClicked = { selectedApp ->
-                            firstApp = selectedApp
-                            label(firstApp = firstApp, secondApp = secondApp)
-                        },
-                        selectImage = selectImage
-                    )
+                        CompactAppChooser(
+                            installedApps = state.installedApps,
+                            letterPosition = state.letterPosition,
+                            selectedApp = firstApp,
+                            hint = R.string.select_first_app,
+                            onItemClicked = { selectedApp ->
+                                firstApp = selectedApp
+                                label(firstApp = firstApp, secondApp = secondApp)
+                            },
+                            selectImage = selectImage
+                        )
                     CompactAppChooser(
                         installedApps = state.installedApps,
                         letterPosition = state.letterPosition,
