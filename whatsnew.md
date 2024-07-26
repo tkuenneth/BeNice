@@ -1,4 +1,5 @@
 # What's new
 
 - Updated some tools and libraries
-- New app pair feature: show an image 
+- Improved edge to edge
+- Creating an app pair from the context menu of an app inside Be Nice now also shows the App Pair Dialog

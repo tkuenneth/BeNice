@@ -7,9 +7,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -60,8 +63,8 @@ fun BeNiceScreen(
     var contextMenuAppInfo by remember { mutableStateOf<AppInfo?>(null) }
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
-    var showSelectSecondAppDialog by remember { mutableStateOf(false) }
-    var firstApp by remember { mutableStateOf<AppInfo?>(null) }
+    var firstApp: AppInfo? by remember { mutableStateOf(null) }
+    var secondApp: AppInfo? by remember { mutableStateOf(null) }
     val closeSheet: (() -> Unit) -> Unit = { callback ->
         scope.launch { sheetState.hide() }.invokeOnCompletion {
             if (!sheetState.isVisible) {
@@ -93,10 +96,14 @@ fun BeNiceScreen(
                 selectImage = selectImage
             )
             FloatingActionButton(
-                onClick = { showAppPairDialog = true },
+                onClick = {
+                    showAppPairDialog = true
+                    firstApp = null
+                    secondApp = null
+                },
                 modifier = Modifier
                     .align(alignment = Alignment.BottomEnd)
-                    .padding(end = 16.dp, bottom = 16.dp)
+                    .safeContentPadding()
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -130,32 +137,22 @@ fun BeNiceScreen(
                 onClick = {
                     closeSheet {
                         firstApp = it
-                        showSelectSecondAppDialog = true
+                        showAppPairDialog = true
                     }
                 },
                 imageVector = Icons.Default.Create,
                 textRes = R.string.create_app_pair
             )
+            Spacer(modifier = Modifier.navigationBarsPadding())
         }
     }
-        AppChooserDialog(
-            isVisible = showSelectSecondAppDialog,
-            installedApps = state.installedApps,
-            letterPosition = state.letterPosition,
-            onClick = { secondApp ->
-                showSelectSecondAppDialog = false
-                firstApp?.let {
-                    onAppsForAppPairSelected(it, secondApp, 500L, label(it, secondApp))
-                }
-            },
-            onDismissRequest = {
-                showSelectSecondAppDialog = false
-            },
-            selectImage = selectImage
-        )
     if (showAppPairDialog) {
         AppPairDialog(
             state = state,
+            firstApp = firstApp,
+            onFirstAoppChanged = { firstApp = it },
+            secondApp = secondApp,
+            onSecondAoppChanged = { secondApp = it },
             onDismissRequest = { showAppPairDialog = false },
             onFinished = { first, second, delay, label ->
                 onAppsForAppPairSelected(first, second, delay, label)
@@ -169,12 +166,14 @@ fun BeNiceScreen(
 @Composable
 fun AppPairDialog(
     state: BeNiceScreenUiState,
+    firstApp: AppInfo?,
+    onFirstAoppChanged: (AppInfo?) -> Unit,
+    secondApp: AppInfo?,
+    onSecondAoppChanged: (AppInfo?) -> Unit,
     onDismissRequest: () -> Unit,
     onFinished: (AppInfo, AppInfo, Long, String) -> Unit,
     selectImage: () -> Unit
 ) {
-    var firstApp: AppInfo? by remember { mutableStateOf(null) }
-    var secondApp: AppInfo? by remember { mutableStateOf(null) }
     val sameApp: Boolean by remember(firstApp, secondApp) {
         mutableStateOf(
             sameApp(
@@ -221,24 +220,24 @@ fun AppPairDialog(
                     modifier = Modifier.verticalScroll(scrollState),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                        CompactAppChooser(
-                            installedApps = state.installedApps,
-                            letterPosition = state.letterPosition,
-                            selectedApp = firstApp,
-                            hint = R.string.select_first_app,
-                            onItemClicked = { selectedApp ->
-                                firstApp = selectedApp
-                                label(firstApp = firstApp, secondApp = secondApp)
-                            },
-                            selectImage = selectImage
-                        )
+                    CompactAppChooser(
+                        installedApps = state.installedApps,
+                        letterPosition = state.letterPosition,
+                        selectedApp = firstApp,
+                        hint = R.string.select_first_app,
+                        onItemClicked = { selectedApp ->
+                            onFirstAoppChanged(selectedApp)
+                            label(firstApp = firstApp, secondApp = secondApp)
+                        },
+                        selectImage = selectImage
+                    )
                     CompactAppChooser(
                         installedApps = state.installedApps,
                         letterPosition = state.letterPosition,
                         selectedApp = secondApp,
                         hint = R.string.select_second_app,
                         onItemClicked = { selectedApp ->
-                            secondApp = selectedApp
+                            onSecondAoppChanged(selectedApp)
                             label(firstApp = firstApp, secondApp = secondApp)
                         },
                         selectImage = selectImage
