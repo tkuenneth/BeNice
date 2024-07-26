@@ -7,9 +7,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -96,7 +99,7 @@ fun BeNiceScreen(
                 onClick = { showAppPairDialog = true },
                 modifier = Modifier
                     .align(alignment = Alignment.BottomEnd)
-                    .padding(end = 16.dp, bottom = 16.dp)
+                    .safeContentPadding()
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -136,23 +139,24 @@ fun BeNiceScreen(
                 imageVector = Icons.Default.Create,
                 textRes = R.string.create_app_pair
             )
+            Spacer(modifier = Modifier.navigationBarsPadding())
         }
     }
-        AppChooserDialog(
-            isVisible = showSelectSecondAppDialog,
-            installedApps = state.installedApps,
-            letterPosition = state.letterPosition,
-            onClick = { secondApp ->
-                showSelectSecondAppDialog = false
-                firstApp?.let {
-                    onAppsForAppPairSelected(it, secondApp, 500L, label(it, secondApp))
-                }
-            },
-            onDismissRequest = {
-                showSelectSecondAppDialog = false
-            },
-            selectImage = selectImage
-        )
+    AppChooserDialog(
+        isVisible = showSelectSecondAppDialog,
+        installedApps = state.installedApps,
+        letterPosition = state.letterPosition,
+        onClick = { secondApp ->
+            showSelectSecondAppDialog = false
+            firstApp?.let {
+                onAppsForAppPairSelected(it, secondApp, 500L, label(it, secondApp))
+            }
+        },
+        onDismissRequest = {
+            showSelectSecondAppDialog = false
+        },
+        selectImage = selectImage
+    )
     if (showAppPairDialog) {
         AppPairDialog(
             state = state,
@@ -221,17 +225,17 @@ fun AppPairDialog(
                     modifier = Modifier.verticalScroll(scrollState),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                        CompactAppChooser(
-                            installedApps = state.installedApps,
-                            letterPosition = state.letterPosition,
-                            selectedApp = firstApp,
-                            hint = R.string.select_first_app,
-                            onItemClicked = { selectedApp ->
-                                firstApp = selectedApp
-                                label(firstApp = firstApp, secondApp = secondApp)
-                            },
-                            selectImage = selectImage
-                        )
+                    CompactAppChooser(
+                        installedApps = state.installedApps,
+                        letterPosition = state.letterPosition,
+                        selectedApp = firstApp,
+                        hint = R.string.select_first_app,
+                        onItemClicked = { selectedApp ->
+                            firstApp = selectedApp
+                            label(firstApp = firstApp, secondApp = secondApp)
+                        },
+                        selectImage = selectImage
+                    )
                     CompactAppChooser(
                         installedApps = state.installedApps,
                         letterPosition = state.letterPosition,
