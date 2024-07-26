@@ -1,5 +1,6 @@
 package de.thomaskuenneth.benice
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.app.TaskStackBuilder
 import android.content.Intent
@@ -18,6 +19,7 @@ class BeNiceTileService : TileService() {
         }
     }
 
+    @SuppressLint("StartActivityAndCollapseDeprecated")
     override fun onClick() {
         val resultIntent = Intent(this, AppChooserActivity::class.java).also {
             it.addFlags(FLAG_ACTIVITY_NEW_TASK)

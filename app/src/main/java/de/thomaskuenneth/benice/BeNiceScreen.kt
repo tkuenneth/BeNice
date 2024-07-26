@@ -63,8 +63,8 @@ fun BeNiceScreen(
     var contextMenuAppInfo by remember { mutableStateOf<AppInfo?>(null) }
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
-    var showSelectSecondAppDialog by remember { mutableStateOf(false) }
-    var firstApp by remember { mutableStateOf<AppInfo?>(null) }
+    var firstApp: AppInfo? by remember { mutableStateOf(null) }
+    var secondApp: AppInfo? by remember { mutableStateOf(null) }
     val closeSheet: (() -> Unit) -> Unit = { callback ->
         scope.launch { sheetState.hide() }.invokeOnCompletion {
             if (!sheetState.isVisible) {
@@ -96,7 +96,11 @@ fun BeNiceScreen(
                 selectImage = selectImage
             )
             FloatingActionButton(
-                onClick = { showAppPairDialog = true },
+                onClick = {
+                    showAppPairDialog = true
+                    firstApp = null
+                    secondApp = null
+                },
                 modifier = Modifier
                     .align(alignment = Alignment.BottomEnd)
                     .safeContentPadding()
@@ -133,7 +137,7 @@ fun BeNiceScreen(
                 onClick = {
                     closeSheet {
                         firstApp = it
-                        showSelectSecondAppDialog = true
+                        showAppPairDialog = true
                     }
                 },
                 imageVector = Icons.Default.Create,
@@ -142,24 +146,13 @@ fun BeNiceScreen(
             Spacer(modifier = Modifier.navigationBarsPadding())
         }
     }
-    AppChooserDialog(
-        isVisible = showSelectSecondAppDialog,
-        installedApps = state.installedApps,
-        letterPosition = state.letterPosition,
-        onClick = { secondApp ->
-            showSelectSecondAppDialog = false
-            firstApp?.let {
-                onAppsForAppPairSelected(it, secondApp, 500L, label(it, secondApp))
-            }
-        },
-        onDismissRequest = {
-            showSelectSecondAppDialog = false
-        },
-        selectImage = selectImage
-    )
     if (showAppPairDialog) {
         AppPairDialog(
             state = state,
+            firstApp = firstApp,
+            onFirstAoppChanged = { firstApp = it },
+            secondApp = secondApp,
+            onSecondAoppChanged = { secondApp = it },
             onDismissRequest = { showAppPairDialog = false },
             onFinished = { first, second, delay, label ->
                 onAppsForAppPairSelected(first, second, delay, label)
@@ -173,12 +166,14 @@ fun BeNiceScreen(
 @Composable
 fun AppPairDialog(
     state: BeNiceScreenUiState,
+    firstApp: AppInfo?,
+    onFirstAoppChanged: (AppInfo?) -> Unit,
+    secondApp: AppInfo?,
+    onSecondAoppChanged: (AppInfo?) -> Unit,
     onDismissRequest: () -> Unit,
     onFinished: (AppInfo, AppInfo, Long, String) -> Unit,
     selectImage: () -> Unit
 ) {
-    var firstApp: AppInfo? by remember { mutableStateOf(null) }
-    var secondApp: AppInfo? by remember { mutableStateOf(null) }
     val sameApp: Boolean by remember(firstApp, secondApp) {
         mutableStateOf(
             sameApp(
@@ -231,7 +226,7 @@ fun AppPairDialog(
                         selectedApp = firstApp,
                         hint = R.string.select_first_app,
                         onItemClicked = { selectedApp ->
-                            firstApp = selectedApp
+                            onFirstAoppChanged(selectedApp)
                             label(firstApp = firstApp, secondApp = secondApp)
                         },
                         selectImage = selectImage
@@ -242,7 +237,7 @@ fun AppPairDialog(
                         selectedApp = secondApp,
                         hint = R.string.select_second_app,
                         onItemClicked = { selectedApp ->
-                            secondApp = selectedApp
+                            onSecondAoppChanged(selectedApp)
                             label(firstApp = firstApp, secondApp = secondApp)
                         },
                         selectImage = selectImage
