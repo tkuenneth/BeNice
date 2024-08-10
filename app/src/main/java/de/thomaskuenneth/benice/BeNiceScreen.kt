@@ -9,10 +9,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -103,7 +105,11 @@ fun BeNiceScreen(
                 },
                 modifier = Modifier
                     .align(alignment = Alignment.BottomEnd)
-                    .safeContentPadding()
+                    .padding(
+                        WindowInsets.navigationBars
+                            .union(WindowInsets(16.dp, 16.dp, 16.dp, 16.dp))
+                            .asPaddingValues()
+                    )
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,

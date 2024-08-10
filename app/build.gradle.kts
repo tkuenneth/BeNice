@@ -6,14 +6,14 @@ plugins {
 
 android {
     namespace = "de.thomaskuenneth.benice"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "de.thomaskuenneth.benice"
         minSdk = 28
-        targetSdk = 34
-        versionCode = 28
-        versionName = "1.2.1"
+        targetSdk = 35
+        versionCode = 29
+        versionName = "1.2.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
