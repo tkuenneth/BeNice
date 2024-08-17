@@ -118,6 +118,7 @@ class AppChooserActivity : ComponentActivity() {
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
                 ) { paddingValues ->
                     BeNiceScreen(
+                        canAddDynamicShortcut = shortcutManager.maxShortcutCountPerActivity > shortcutManager.dynamicShortcuts.size,
                         windowSizeClass = windowSizeClass,
                         state = state,
                         onClick = ::onClick,
@@ -130,10 +131,17 @@ class AppChooserActivity : ComponentActivity() {
                             .padding(paddingValues = paddingValues)
                             .background(color = MaterialTheme.colorScheme.background)
                     )
-                    SettingsScreen(isOpen = settingsOpen, viewModel = viewModel, sheetClosed = {
-                        settingsOpen = false
-                        prefs.edit().putInt(KEY_LETTER_POSITION, state.letterPosition).apply()
-                    })
+                    SettingsScreen(
+                        removeDynamicShortcutsEnabled = shortcutManager.dynamicShortcuts.size > 0,
+                        isOpen = settingsOpen,
+                        viewModel = viewModel,
+                        sheetClosed = {
+                            settingsOpen = false
+                            prefs.edit().putInt(KEY_LETTER_POSITION, state.letterPosition).apply()
+                        },
+                        removeAllDynamicShortcutsCallback = {
+                            shortcutManager.removeDynamicShortcuts(shortcutManager.dynamicShortcuts.map { it.id })
+                        })
                 }
             }
         }
@@ -168,7 +176,11 @@ class AppChooserActivity : ComponentActivity() {
     }
 
     private fun onAppsForAppPairSelected(
-        firstApp: AppInfo, secondApp: AppInfo, delay: Long, label: String
+        firstApp: AppInfo,
+        secondApp: AppInfo,
+        delay: Long,
+        label: String,
+        addDynamicShortcut: Boolean
     ) {
         if (shortcutManager.isRequestPinShortcutSupported) {
             val id = "${firstApp.className}|${secondApp.className}"
@@ -181,6 +193,10 @@ class AppChooserActivity : ComponentActivity() {
             ).setShortLabel(label).setIntent(createLaunchAppPairIntent(firstApp, secondApp, delay))
                 .build()
             shortcutManager.requestPinShortcut(shortcutInfo, null)
+            shortcutManager.maxShortcutCountPerActivity
+            if (addDynamicShortcut) {
+                shortcutManager.addDynamicShortcuts(listOf(shortcutInfo))
+            }
         }
     }
 

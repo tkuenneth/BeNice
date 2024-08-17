@@ -3,6 +3,7 @@ package de.thomaskuenneth.benice
 import android.app.Activity
 import android.content.Intent
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,7 @@ import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -54,11 +56,12 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BeNiceScreen(
+    canAddDynamicShortcut: Boolean,
     windowSizeClass: WindowSizeClass,
     state: BeNiceScreenUiState, onClick: (AppInfo) -> Unit,
     onAddLinkClicked: (AppInfo) -> Unit,
     onOpenAppInfoClicked: (AppInfo) -> Unit,
-    onAppsForAppPairSelected: (AppInfo, AppInfo, Long, String) -> Unit,
+    onAppsForAppPairSelected: (AppInfo, AppInfo, Long, String, Boolean) -> Unit,
     selectImage: () -> Unit,
     modifier: Modifier
 ) {
@@ -154,14 +157,15 @@ fun BeNiceScreen(
     }
     if (showAppPairDialog) {
         AppPairDialog(
+            canAddDynamicShortcut = canAddDynamicShortcut,
             state = state,
             firstApp = firstApp,
             onFirstAoppChanged = { firstApp = it },
             secondApp = secondApp,
             onSecondAoppChanged = { secondApp = it },
             onDismissRequest = { showAppPairDialog = false },
-            onFinished = { first, second, delay, label ->
-                onAppsForAppPairSelected(first, second, delay, label)
+            onFinished = { first, second, delay, label, addDynamicShortcut ->
+                onAppsForAppPairSelected(first, second, delay, label, addDynamicShortcut)
                 showAppPairDialog = false
             },
             selectImage = selectImage
@@ -171,13 +175,14 @@ fun BeNiceScreen(
 
 @Composable
 fun AppPairDialog(
+    canAddDynamicShortcut: Boolean,
     state: BeNiceScreenUiState,
     firstApp: AppInfo?,
     onFirstAoppChanged: (AppInfo?) -> Unit,
     secondApp: AppInfo?,
     onSecondAoppChanged: (AppInfo?) -> Unit,
     onDismissRequest: () -> Unit,
-    onFinished: (AppInfo, AppInfo, Long, String) -> Unit,
+    onFinished: (AppInfo, AppInfo, Long, String, Boolean) -> Unit,
     selectImage: () -> Unit
 ) {
     val sameApp: Boolean by remember(firstApp, secondApp) {
@@ -201,12 +206,13 @@ fun AppPairDialog(
             )
         )
     }
+    var addDynamicShortcut by remember { mutableStateOf(true) }
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             Button(
                 enabled = label.isNotBlank() && !label.isTooLong() && bothAppsChosen && !sameApp,
-                onClick = { onFinished(firstApp!!, secondApp!!, delay.toLong(), label) }) {
+                onClick = { onFinished(firstApp!!, secondApp!!, delay.toLong(), label, addDynamicShortcut) }) {
                 Text(text = stringResource(id = R.string.create))
             }
         },
@@ -295,6 +301,18 @@ fun AppPairDialog(
                             keyboardType = KeyboardType.Text,
                             onValueChange = { label = it }
                         )
+                    }
+                    if (canAddDynamicShortcut) {
+                        Row(
+                            modifier = Modifier.clickable { addDynamicShortcut = ! addDynamicShortcut },
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(text = stringResource(id = R.string.add_dynamic_shortcut))
+                            Checkbox(
+                                checked = addDynamicShortcut,
+                                onCheckedChange = { addDynamicShortcut = it }
+                            )
+                        }
                     }
                 }
                 AnimatedUpOrDownButton(
