@@ -12,8 +12,8 @@ android {
         applicationId = "de.thomaskuenneth.benice"
         minSdk = 28
         targetSdk = 35
-        versionCode = 29
-        versionName = "1.2.2"
+        versionCode = 30
+        versionName = "1.2.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -72,7 +72,7 @@ dependencies {
     implementation("androidx.window:window-core:1.3.0")
     implementation("androidx.window:window:1.3.0")
 
-    implementation("io.coil-kt:coil-compose:2.5.0")
+    implementation("io.coil-kt:coil-compose:2.7.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")

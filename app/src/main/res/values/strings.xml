@@ -34,4 +34,6 @@
     <string name="apps_must_be_different">Please choose two different apps</string>
     <string name="show_image">Show image</string>
     <string name="image">Image</string>
+    <string name="add_dynamic_shortcut">Add dynamic shortcut</string>
+    <string name="remove_all_dynamic_shortcuts">Remove all dynamic shortcuts</string>
 </resources>
