@@ -187,7 +187,10 @@ class AppChooserActivity : ComponentActivity() {
             val shortcutInfo = ShortcutInfo.Builder(this, id).setIcon(
                 Icon.createWithBitmap(
                     createAppPairBitmap(
-                        firstApp = firstApp, secondApp = secondApp
+                        firstApp = firstApp,
+                        secondApp = secondApp,
+                        bigWidth = shortcutManager.iconMaxWidth,
+                        bigHeight = shortcutManager.iconMaxHeight
                     )
                 )
             ).setShortLabel(label).setIntent(createLaunchAppPairIntent(firstApp, secondApp, delay))
@@ -206,10 +209,8 @@ class AppChooserActivity : ComponentActivity() {
 }
 
 fun createAppPairBitmap(
-    firstApp: AppInfo, secondApp: AppInfo
+    firstApp: AppInfo, secondApp: AppInfo, bigWidth: Int, bigHeight: Int
 ): Bitmap {
-    val bigWidth = 512
-    val bigHeight = 512
     val smallWidth = bigWidth / 2
     val smallHeight = bigHeight / 2
     val y = smallHeight / 2F
@@ -219,14 +220,20 @@ fun createAppPairBitmap(
             paint.isFilterBitmap = true
         }
         Canvas(bitmap).run {
+            val firstBitmap = firstApp.icon.toBitmap(smallWidth, smallHeight)
+            val secondBitmap = secondApp.icon.toBitmap(smallWidth, smallHeight)
             drawPaint(Paint().also {
                 it.color = Color.TRANSPARENT
             })
-            drawBitmap(firstApp.icon.toBitmap(smallWidth, smallHeight), 0F, y, bitmapPaint)
+            save()
+            density = firstBitmap.density
+            drawBitmap(firstBitmap, 0F, smallHeight.toFloat(), bitmapPaint)
+            restore()
+            density = secondBitmap.density
             drawBitmap(
-                secondApp.icon.toBitmap(smallWidth, smallHeight),
+                secondBitmap,
                 smallWidth.toFloat(),
-                y,
+                0F,
                 bitmapPaint
             )
         }
