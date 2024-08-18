@@ -1,5 +1,4 @@
 # What's new
 
-- Updated some tools and libraries
-- Improved edge to edge
-- Creating an app pair from the context menu of an app inside Be Nice now also shows the App Pair Dialog
+- Some app icons in a app pair shortcut may have appeared too big. This has been fixed.
+- Improved layout of the small app icons in the app pair shortcut: the icon on the right hand side no longer collides with the small Be nice icon
