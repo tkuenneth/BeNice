@@ -1,3 +1,4 @@
 # What's new
 
-When creating an app pair, you can now choose to also create a so-called dynamic shortcut. Dynamic shortcuts are available through long tapping on the Be nice icon. Also, alternative launchers may pick them up, too. Please note that the number of dynamic shortcuts is limited through the system. You can remove all dynamic shortcuts created in be Nice in the Be nice settings
+- Some app icons in a app pair shortcut may have appeared too big. This has been fixed.
+- You can now specify how the small app icons in the app pair shortcut will be arranged: horizontal and diagonal
