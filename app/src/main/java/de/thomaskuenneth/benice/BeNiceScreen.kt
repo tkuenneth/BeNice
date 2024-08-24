@@ -61,7 +61,7 @@ fun BeNiceScreen(
     state: BeNiceScreenUiState, onClick: (AppInfo) -> Unit,
     onAddLinkClicked: (AppInfo) -> Unit,
     onOpenAppInfoClicked: (AppInfo) -> Unit,
-    onAppsForAppPairSelected: (AppInfo, AppInfo, Long, String, Boolean) -> Unit,
+    onAppsForAppPairSelected: (AppInfo, AppInfo, Long, String, Boolean, AppPairIconLayout) -> Unit,
     selectImage: () -> Unit,
     modifier: Modifier
 ) {
@@ -164,8 +164,8 @@ fun BeNiceScreen(
             secondApp = secondApp,
             onSecondAoppChanged = { secondApp = it },
             onDismissRequest = { showAppPairDialog = false },
-            onFinished = { first, second, delay, label, addDynamicShortcut ->
-                onAppsForAppPairSelected(first, second, delay, label, addDynamicShortcut)
+            onFinished = { first, second, delay, label, addDynamicShortcut, layout ->
+                onAppsForAppPairSelected(first, second, delay, label, addDynamicShortcut, layout)
                 showAppPairDialog = false
             },
             selectImage = selectImage
@@ -182,7 +182,7 @@ fun AppPairDialog(
     secondApp: AppInfo?,
     onSecondAoppChanged: (AppInfo?) -> Unit,
     onDismissRequest: () -> Unit,
-    onFinished: (AppInfo, AppInfo, Long, String, Boolean) -> Unit,
+    onFinished: (AppInfo, AppInfo, Long, String, Boolean, AppPairIconLayout) -> Unit,
     selectImage: () -> Unit
 ) {
     val sameApp: Boolean by remember(firstApp, secondApp) {
@@ -207,12 +207,22 @@ fun AppPairDialog(
         )
     }
     var addDynamicShortcut by remember { mutableStateOf(true) }
+    var layout by remember { mutableStateOf(AppPairIconLayout.HORIZONTAL) }
     AlertDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             Button(
                 enabled = label.isNotBlank() && !label.isTooLong() && bothAppsChosen && !sameApp,
-                onClick = { onFinished(firstApp!!, secondApp!!, delay.toLong(), label, addDynamicShortcut) }) {
+                onClick = {
+                    onFinished(
+                        firstApp!!,
+                        secondApp!!,
+                        delay.toLong(),
+                        label,
+                        addDynamicShortcut,
+                        layout
+                    )
+                }) {
                 Text(text = stringResource(id = R.string.create))
             }
         },
@@ -302,9 +312,38 @@ fun AppPairDialog(
                             onValueChange = { label = it }
                         )
                     }
+                    if (bothAppsChosen) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                AppPairImage(
+                                    firstApp = firstApp!!,
+                                    secondApp = secondApp!!,
+                                    layout = AppPairIconLayout.HORIZONTAL,
+                                    layout == AppPairIconLayout.HORIZONTAL
+                                ) {
+                                    layout = AppPairIconLayout.HORIZONTAL
+                                }
+                                AppPairImage(
+                                    firstApp = firstApp,
+                                    secondApp = secondApp,
+                                    layout = AppPairIconLayout.DIAGONAL,
+                                    layout == AppPairIconLayout.DIAGONAL
+                                ) {
+                                    layout = AppPairIconLayout.DIAGONAL
+                                }
+                            }
+                            Text(
+                                modifier = Modifier.padding(top = 8.dp),
+                                text = stringResource(id = R.string.launchers_may_add_artwork),
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
+                    }
                     if (canAddDynamicShortcut) {
                         Row(
-                            modifier = Modifier.clickable { addDynamicShortcut = ! addDynamicShortcut },
+                            modifier = Modifier.clickable {
+                                addDynamicShortcut = !addDynamicShortcut
+                            },
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(text = stringResource(id = R.string.add_dynamic_shortcut))

@@ -180,7 +180,8 @@ class AppChooserActivity : ComponentActivity() {
         secondApp: AppInfo,
         delay: Long,
         label: String,
-        addDynamicShortcut: Boolean
+        addDynamicShortcut: Boolean,
+        layout: AppPairIconLayout
     ) {
         if (shortcutManager.isRequestPinShortcutSupported) {
             val id = "${firstApp.className}|${secondApp.className}"
@@ -190,7 +191,8 @@ class AppChooserActivity : ComponentActivity() {
                         firstApp = firstApp,
                         secondApp = secondApp,
                         bigWidth = shortcutManager.iconMaxWidth,
-                        bigHeight = shortcutManager.iconMaxHeight
+                        bigHeight = shortcutManager.iconMaxHeight,
+                        layout = layout
                     )
                 )
             ).setShortLabel(label).setIntent(createLaunchAppPairIntent(firstApp, secondApp, delay))
@@ -209,11 +211,13 @@ class AppChooserActivity : ComponentActivity() {
 }
 
 fun createAppPairBitmap(
-    firstApp: AppInfo, secondApp: AppInfo, bigWidth: Int, bigHeight: Int
+    firstApp: AppInfo, secondApp: AppInfo, bigWidth: Int, bigHeight: Int, layout: AppPairIconLayout
 ): Bitmap {
     val smallWidth = bigWidth / 2
     val smallHeight = bigHeight / 2
-    val y = smallHeight / 2F
+    val verticalMargin = smallHeight / 2F
+    val topFirstBitmap = if (layout == AppPairIconLayout.DIAGONAL) smallHeight.toFloat() else verticalMargin
+    val topSecondBitmap = if (layout == AppPairIconLayout.DIAGONAL) 0F else verticalMargin
     return Bitmap.createBitmap(bigWidth, bigHeight, Bitmap.Config.ARGB_8888).also { bitmap ->
         val bitmapPaint = Paint().also { paint ->
             paint.isAntiAlias = true
@@ -227,13 +231,13 @@ fun createAppPairBitmap(
             })
             save()
             density = firstBitmap.density
-            drawBitmap(firstBitmap, 0F, smallHeight.toFloat(), bitmapPaint)
+            drawBitmap(firstBitmap, 0F, topFirstBitmap, bitmapPaint)
             restore()
             density = secondBitmap.density
             drawBitmap(
                 secondBitmap,
                 smallWidth.toFloat(),
-                0F,
+                topSecondBitmap,
                 bitmapPaint
             )
         }
