@@ -72,6 +72,11 @@ fun BeNiceScreen(
         }
     }
     var showAppPairDialog by remember { mutableStateOf(false) }
+    val hideAppPairDialog: () -> Unit = {
+        showAppPairDialog = false
+        firstApp = null
+        secondApp = null
+    }
     Box(
         modifier = modifier,
         contentAlignment = Alignment.Center
@@ -136,10 +141,10 @@ fun BeNiceScreen(
             onFirstAppChanged = { firstApp = it },
             secondApp = secondApp,
             onSecondAppChanged = { secondApp = it },
-            onDismissRequest = { showAppPairDialog = false },
+            onDismissRequest = hideAppPairDialog,
             onFinished = { first, second, delay, label, addDynamicShortcut, layout ->
                 onAppsForAppPairSelected(first, second, delay, label, addDynamicShortcut, layout)
-                showAppPairDialog = false
+                hideAppPairDialog()
             },
             selectImage = selectImage
         )
