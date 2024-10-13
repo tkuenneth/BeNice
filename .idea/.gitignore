@@ -3,3 +3,5 @@
 /workspace.xml
 other.xml
 deploymentTargetSelector.xml
+inspectionProfiles/Project_Default.xml
+studiobot.xml
