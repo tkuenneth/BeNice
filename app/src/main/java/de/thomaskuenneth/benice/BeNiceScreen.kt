@@ -8,22 +8,16 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Launch
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddLink
-import androidx.compose.material.icons.filled.Create
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
@@ -31,7 +25,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
@@ -72,10 +65,10 @@ fun BeNiceScreen(
     var secondApp: AppInfo? by remember { mutableStateOf(null) }
     val closeSheet: (() -> Unit) -> Unit = { callback ->
         scope.launch { sheetState.hide() }.invokeOnCompletion {
+            callback()
             if (!sheetState.isVisible) {
                 contextMenuAppInfo = null
             }
-            callback()
         }
     }
     var showAppPairDialog by remember { mutableStateOf(false) }
@@ -121,48 +114,28 @@ fun BeNiceScreen(
             }
         }
     }
-    contextMenuAppInfo?.let {
-        ModalBottomSheet(
-            onDismissRequest = { contextMenuAppInfo = null },
+    contextMenuAppInfo?.let { appInfo ->
+        ContextModalBottomSheet(
+            contextMenuAppInfo = appInfo,
             sheetState = sheetState,
-            contentWindowInsets = { WindowInsets(0) },
-        ) {
-            MenuItem(
-                onClick = { closeSheet { onClick(it) } },
-                imageVector = Icons.AutoMirrored.Filled.Launch,
-                textRes = R.string.launch
-            )
-            MenuItem(
-                onClick = { closeSheet { onOpenAppInfoClicked(it) } },
-                imageVector = Icons.Default.Info,
-                textRes = R.string.open_app_info
-            )
-            MenuItem(
-                onClick = { closeSheet { onAddLinkClicked(it) } },
-                imageVector = Icons.Default.AddLink,
-                textRes = R.string.add_link
-            )
-            MenuItem(
-                onClick = {
-                    closeSheet {
-                        firstApp = it
-                        showAppPairDialog = true
-                    }
-                },
-                imageVector = Icons.Default.Create,
-                textRes = R.string.create_app_pair
-            )
-            Spacer(modifier = Modifier.navigationBarsPadding())
-        }
+            closeSheet = { callback -> closeSheet(callback) },
+            onLaunchClicked = onClick,
+            onAddLinkClicked = onAddLinkClicked,
+            onOpenAppInfoClicked = onOpenAppInfoClicked,
+            onCreateAppPairClicked = {
+                firstApp = contextMenuAppInfo
+                showAppPairDialog = true
+            },
+            onDismissRequest = { contextMenuAppInfo = null })
     }
     if (showAppPairDialog) {
         AppPairDialog(
             canAddDynamicShortcut = canAddDynamicShortcut,
             state = state,
             firstApp = firstApp,
-            onFirstAoppChanged = { firstApp = it },
+            onFirstAppChanged = { firstApp = it },
             secondApp = secondApp,
-            onSecondAoppChanged = { secondApp = it },
+            onSecondAppChanged = { secondApp = it },
             onDismissRequest = { showAppPairDialog = false },
             onFinished = { first, second, delay, label, addDynamicShortcut, layout ->
                 onAppsForAppPairSelected(first, second, delay, label, addDynamicShortcut, layout)
@@ -178,9 +151,9 @@ fun AppPairDialog(
     canAddDynamicShortcut: Boolean,
     state: BeNiceScreenUiState,
     firstApp: AppInfo?,
-    onFirstAoppChanged: (AppInfo?) -> Unit,
+    onFirstAppChanged: (AppInfo?) -> Unit,
     secondApp: AppInfo?,
-    onSecondAoppChanged: (AppInfo?) -> Unit,
+    onSecondAppChanged: (AppInfo?) -> Unit,
     onDismissRequest: () -> Unit,
     onFinished: (AppInfo, AppInfo, Long, String, Boolean, AppPairIconLayout) -> Unit,
     selectImage: () -> Unit
@@ -248,7 +221,7 @@ fun AppPairDialog(
                         selectedApp = firstApp,
                         hint = R.string.select_first_app,
                         onItemClicked = { selectedApp ->
-                            onFirstAoppChanged(selectedApp)
+                            onFirstAppChanged(selectedApp)
                             label(firstApp = firstApp, secondApp = secondApp)
                         },
                         selectImage = selectImage
@@ -259,7 +232,7 @@ fun AppPairDialog(
                         selectedApp = secondApp,
                         hint = R.string.select_second_app,
                         onItemClicked = { selectedApp ->
-                            onSecondAoppChanged(selectedApp)
+                            onSecondAppChanged(selectedApp)
                             label(firstApp = firstApp, secondApp = secondApp)
                         },
                         selectImage = selectImage
