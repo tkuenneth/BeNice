@@ -53,7 +53,7 @@ fun SettingsScreen(
         ModalBottomSheet(
             onDismissRequest = sheetClosed,
             sheetState = sheetState,
-            windowInsets = WindowInsets(0),
+            contentWindowInsets = { WindowInsets(0) },
         ) {
             BeNiceLabel(
                 text = R.string.letter_position,

@@ -125,7 +125,7 @@ fun BeNiceScreen(
         ModalBottomSheet(
             onDismissRequest = { contextMenuAppInfo = null },
             sheetState = sheetState,
-            windowInsets = WindowInsets(0),
+            contentWindowInsets = { WindowInsets(0) },
         ) {
             MenuItem(
                 onClick = { closeSheet { onClick(it) } },
