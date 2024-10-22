@@ -5,3 +5,7 @@ other.xml
 deploymentTargetSelector.xml
 inspectionProfiles/Project_Default.xml
 studiobot.xml
+compiler.xml
+gradle.xml
+misc.xml
+runConfigurations.xml
