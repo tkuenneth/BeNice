@@ -124,7 +124,7 @@ class AppChooserActivity : ComponentActivity() {
                         onAddLinkClicked = ::onAddLinkClicked,
                         onOpenAppInfoClicked = ::onOpenAppInfoClicked,
                         onAppsForAppPairSelected = ::onAppsForAppPairSelected,
-                        selectImage = ::selectImage,
+                        selectBitmap = ::selectBitmap,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(paddingValues = paddingValues)
@@ -203,7 +203,8 @@ class AppChooserActivity : ComponentActivity() {
         }
     }
 
-    private fun selectImage() {
+    private fun selectBitmap() {
+        viewModel.setBitmap(null)
         launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
 }

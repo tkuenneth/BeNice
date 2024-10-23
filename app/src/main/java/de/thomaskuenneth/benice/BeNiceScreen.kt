@@ -58,7 +58,7 @@ fun BeNiceScreen(
     onAddLinkClicked: (AppInfo) -> Unit,
     onOpenAppInfoClicked: (AppInfo) -> Unit,
     onAppsForAppPairSelected: (AppInfo, AppInfo, Long, String, Boolean, AppPairIconLayout) -> Unit,
-    selectImage: () -> Unit,
+    selectBitmap: () -> Unit,
     modifier: Modifier
 ) {
     var contextMenuAppInfo by remember { mutableStateOf<AppInfo?>(null) }
@@ -97,7 +97,7 @@ fun BeNiceScreen(
                 onLongClick = { appInfo ->
                     contextMenuAppInfo = appInfo
                 },
-                selectImage = selectImage
+                selectImage = selectBitmap
             )
             FloatingActionButton(
                 onClick = {
@@ -145,7 +145,7 @@ fun BeNiceScreen(
                 onAppsForAppPairSelected(first, second, delay, label, addDynamicShortcut, layout)
                 hideAppPairDialog()
             },
-            selectImage = selectImage
+            selectImage = selectBitmap
         )
     }
 }

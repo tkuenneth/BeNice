@@ -26,6 +26,7 @@ fun ShowImageMenuItem(
     }
     MenuItem(
         onClick = {
+            viewModel.setBitmap(null)
             selectBitmap()
         },
         imageVector = Icons.Default.Image,
