@@ -32,7 +32,7 @@ fun AppChooserDialog(
                     showSpecials = true,
                     onClick = onClick,
                     onLongClick = {},
-                    selectImage = selectImage
+                    selectBitmap = selectImage
                 )
             }
         }

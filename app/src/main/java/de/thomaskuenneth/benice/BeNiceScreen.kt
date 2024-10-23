@@ -97,7 +97,7 @@ fun BeNiceScreen(
                 onLongClick = { appInfo ->
                     contextMenuAppInfo = appInfo
                 },
-                selectImage = selectBitmap
+                selectBitmap = selectBitmap
             )
             FloatingActionButton(
                 onClick = {
@@ -145,7 +145,7 @@ fun BeNiceScreen(
                 onAppsForAppPairSelected(first, second, delay, label, addDynamicShortcut, layout)
                 hideAppPairDialog()
             },
-            selectImage = selectBitmap
+            selectBitmap = selectBitmap
         )
     }
 }
@@ -160,7 +160,7 @@ fun AppPairDialog(
     onSecondAppChanged: (AppInfo?) -> Unit,
     onDismissRequest: () -> Unit,
     onFinished: (AppInfo, AppInfo, Long, String, Boolean, AppPairIconLayout) -> Unit,
-    selectImage: () -> Unit
+    selectBitmap: () -> Unit
 ) {
     val sameApp: Boolean by remember(firstApp, secondApp) {
         mutableStateOf(
@@ -215,7 +215,7 @@ fun AppPairDialog(
                         onFirstAppChanged(selectedApp)
                         label(firstApp = firstApp, secondApp = secondApp)
                     },
-                    selectImage = selectImage
+                    selectImage = selectBitmap
                 )
                 CompactAppChooser(
                     installedApps = state.installedApps,
@@ -226,7 +226,7 @@ fun AppPairDialog(
                         onSecondAppChanged(selectedApp)
                         label(firstApp = firstApp, secondApp = secondApp)
                     },
-                    selectImage = selectImage
+                    selectImage = selectBitmap
                 )
                 if (bothAppsChosen && sameApp) {
                     Text(
@@ -303,7 +303,7 @@ fun AppPairDialog(
                                 secondApp = secondApp,
                                 layout = AppPairIconLayout.CustomImage(customImage),
                                 selected = layout is AppPairIconLayout.CustomImage,
-                                selectBitmap = selectImage,
+                                selectBitmap = selectBitmap,
                                 bitmapSelected = { bitmap, _ ->
                                     bitmap?.run {
                                         customImage = bitmap

@@ -32,24 +32,20 @@ fun AppChooser(
     showSpecials: Boolean,
     onClick: (AppInfo) -> Unit,
     onLongClick: (AppInfo) -> Unit,
-    selectImage: () -> Unit
+    selectBitmap: () -> Unit
 ) {
     val iconColor = MaterialTheme.colorScheme.primary.toArgb()
     val context = LocalContext.current
     val onDoneUrl: (String) -> Unit = { url ->
         onClick(
-            AppInfo(
-                packageName = MIME_TYPE_URL,
+            AppInfo(packageName = MIME_TYPE_URL,
                 className = url,
                 label = url.createLabelFromURL(context.getString(R.string.open_url)),
                 icon = ResourcesCompat.getDrawable(
-                    context.resources,
-                    R.drawable.baseline_open_in_browser_24,
-                    context.theme
+                    context.resources, R.drawable.baseline_open_in_browser_24, context.theme
                 )!!.also {
                     it.setTint(iconColor)
-                }
-            )
+                })
         )
     }
     val haptics = LocalHapticFeedback.current
@@ -71,22 +67,18 @@ fun AppChooser(
                     OpenInBrowserMenuItem(onDone = onDoneUrl)
                 }
                 item {
-                    ShowImageMenuItem(
-                        selectBitmap = selectImage,
-                        bitmapSelected = { bitmap, uri ->
-                            bitmap?.run {
-                                val drawable = BitmapDrawable(context.resources, bitmap)
-                                onClick(
-                                    AppInfo(
-                                        packageName = MIME_TYPE_IMAGE,
-                                        className = uri.toString(),
-                                        label = context.getString(R.string.image),
-                                        icon = drawable
-                                    )
+                    ShowImageMenuItem(selectBitmap = selectBitmap, bitmapSelected = { bitmap, uri ->
+                        bitmap?.run {
+                            onClick(
+                                AppInfo(
+                                    packageName = MIME_TYPE_IMAGE,
+                                    className = uri.toString(),
+                                    label = context.getString(R.string.image),
+                                    icon = BitmapDrawable(context.resources, bitmap)
                                 )
-                            }
+                            )
                         }
-                    )
+                    })
                 }
             }
             installedApps.forEach { appInfo ->
@@ -113,10 +105,8 @@ fun AppChooser(
                     }
                 }
                 item(key = counter++) {
-                    AppChooserItem(
-                        appInfo = appInfo,
-                        modifier = Modifier.combinedClickable(
-                            onClick = { onClick(appInfo) },
+                    AppChooserItem(appInfo = appInfo,
+                        modifier = Modifier.combinedClickable(onClick = { onClick(appInfo) },
                             onLongClick = {
                                 haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                                 onLongClick(appInfo)

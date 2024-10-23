@@ -14,14 +14,11 @@ import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.launch
 
 @Composable
 fun SelectableImage(
@@ -34,22 +31,12 @@ fun SelectableImage(
     viewModel: ShowImageMenuItemViewModel = viewModel(ShowImageMenuItemViewModel::class.java),
     onClick: () -> Unit
 ) {
-    val scope = rememberCoroutineScope()
-    LaunchedEffect(key1 = Unit) {
-        scope.launch {
-            viewModel.bitmap.collect {
-                it?.let { bitmap ->
-                    bitmapSelected(bitmap, viewModel.uri.value)
-                    onClick()
-                }
-            }
-        }
-    }
     val hasBitmap = layout.bitmap != null
     val chooseImage = @Composable {
-        FilledTonalIconButton(
-            onClick = selectBitmap
-        ) {
+        FilledTonalIconButton(onClick = {
+            selectBitmap()
+            viewModel.awaitBitmap { bitmapSelected(it, viewModel.uri.value) }
+        }) {
             Icon(
                 imageVector = Icons.Default.Image,
                 contentDescription = stringResource(R.string.choose_image)
