@@ -2,6 +2,7 @@ package de.thomaskuenneth.benice
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -51,7 +52,8 @@ import kotlinx.coroutines.launch
 fun BeNiceScreen(
     canAddDynamicShortcut: Boolean,
     windowSizeClass: WindowSizeClass,
-    state: BeNiceScreenUiState, onClick: (AppInfo) -> Unit,
+    state: BeNiceScreenUiState,
+    onClick: (AppInfo) -> Unit,
     onAddLinkClicked: (AppInfo) -> Unit,
     onOpenAppInfoClicked: (AppInfo) -> Unit,
     onAppsForAppPairSelected: (AppInfo, AppInfo, Long, String, Boolean, AppPairIconLayout) -> Unit,
@@ -78,10 +80,8 @@ fun BeNiceScreen(
         secondApp = null
     }
     Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
-    )
-    {
+        modifier = modifier, contentAlignment = Alignment.Center
+    ) {
         if (!state.isLoading) {
             AppChooser(
                 installedApps = state.installedApps,
@@ -103,8 +103,7 @@ fun BeNiceScreen(
                     showAppPairDialog = true
                     firstApp = null
                     secondApp = null
-                },
-                modifier = Modifier
+                }, modifier = Modifier
                     .align(alignment = Alignment.BottomEnd)
                     .padding(
                         WindowInsets.navigationBars
@@ -120,8 +119,7 @@ fun BeNiceScreen(
         }
     }
     contextMenuAppInfo?.let { appInfo ->
-        ContextModalBottomSheet(
-            contextMenuAppInfo = appInfo,
+        ContextModalBottomSheet(contextMenuAppInfo = appInfo,
             sheetState = sheetState,
             closeSheet = { callback -> closeSheet(callback) },
             onLaunchClicked = onClick,
@@ -166,193 +164,188 @@ fun AppPairDialog(
     val sameApp: Boolean by remember(firstApp, secondApp) {
         mutableStateOf(
             sameApp(
-                firstApp,
-                secondApp
+                firstApp, secondApp
             )
         )
     }
     val bothAppsChosen: Boolean by remember(
-        firstApp,
-        secondApp
+        firstApp, secondApp
     ) { mutableStateOf(firstApp != null && secondApp != null) }
     var delay by remember { mutableFloatStateOf(500F) }
     var label by remember(firstApp, secondApp) {
         mutableStateOf(
             label(
-                firstApp = firstApp,
-                secondApp = secondApp
+                firstApp = firstApp, secondApp = secondApp
             )
         )
     }
     var addDynamicShortcut by remember { mutableStateOf(true) }
-    var layout by remember { mutableStateOf(AppPairIconLayout.HORIZONTAL) }
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        confirmButton = {
-            Button(
-                enabled = label.isNotBlank() && !label.isTooLong() && bothAppsChosen && !sameApp,
-                onClick = {
-                    onFinished(
-                        firstApp!!,
-                        secondApp!!,
-                        delay.toLong(),
-                        label,
-                        addDynamicShortcut,
-                        layout
-                    )
-                }) {
-                Text(text = stringResource(id = R.string.create))
-            }
-        },
-        dismissButton = {
-            OutlinedButton(onClick = { onDismissRequest() }) {
-                Text(text = stringResource(id = R.string.cancel))
-            }
-        },
-        title = { Text(text = stringResource(id = R.string.create_app_pair)) },
-        text = {
-            Box {
-                val scrollState = rememberScrollState()
-                val coroutineScope = rememberCoroutineScope()
-                val showDownButton by remember { derivedStateOf { scrollState.value == 0 && scrollState.canScrollForward } }
-                val showUpButton by remember { derivedStateOf { scrollState.value == scrollState.maxValue && scrollState.canScrollBackward } }
-                Column(
-                    modifier = Modifier.verticalScroll(scrollState),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    CompactAppChooser(
-                        installedApps = state.installedApps,
-                        letterPosition = state.letterPosition,
-                        selectedApp = firstApp,
-                        hint = R.string.select_first_app,
-                        onItemClicked = { selectedApp ->
-                            onFirstAppChanged(selectedApp)
-                            label(firstApp = firstApp, secondApp = secondApp)
-                        },
-                        selectImage = selectImage
-                    )
-                    CompactAppChooser(
-                        installedApps = state.installedApps,
-                        letterPosition = state.letterPosition,
-                        selectedApp = secondApp,
-                        hint = R.string.select_second_app,
-                        onItemClicked = { selectedApp ->
-                            onSecondAppChanged(selectedApp)
-                            label(firstApp = firstApp, secondApp = secondApp)
-                        },
-                        selectImage = selectImage
-                    )
-                    if (bothAppsChosen && sameApp) {
-                        Text(
-                            modifier = Modifier.align(Alignment.Start),
-                            text = stringResource(id = R.string.apps_must_be_different),
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.labelLarge
-                        )
-                    }
+    var layout: AppPairIconLayout by remember { mutableStateOf(AppPairIconLayout.Horizontal) }
+    var customImage by remember { mutableStateOf<Bitmap?>(null) }
+    AlertDialog(onDismissRequest = onDismissRequest, confirmButton = {
+        Button(enabled = label.isNotBlank() && !label.isTooLong() && bothAppsChosen && !sameApp,
+            onClick = {
+                onFinished(
+                    firstApp!!, secondApp!!, delay.toLong(), label, addDynamicShortcut, layout
+                )
+            }) {
+            Text(text = stringResource(id = R.string.create))
+        }
+    }, dismissButton = {
+        OutlinedButton(onClick = { onDismissRequest() }) {
+            Text(text = stringResource(id = R.string.cancel))
+        }
+    }, title = { Text(text = stringResource(id = R.string.create_app_pair)) }, text = {
+        Box {
+            val scrollState = rememberScrollState()
+            val coroutineScope = rememberCoroutineScope()
+            val showDownButton by remember { derivedStateOf { scrollState.value == 0 && scrollState.canScrollForward } }
+            val showUpButton by remember { derivedStateOf { scrollState.value == scrollState.maxValue && scrollState.canScrollBackward } }
+            Column(
+                modifier = Modifier.verticalScroll(scrollState),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CompactAppChooser(
+                    installedApps = state.installedApps,
+                    letterPosition = state.letterPosition,
+                    selectedApp = firstApp,
+                    hint = R.string.select_first_app,
+                    onItemClicked = { selectedApp ->
+                        onFirstAppChanged(selectedApp)
+                        label(firstApp = firstApp, secondApp = secondApp)
+                    },
+                    selectImage = selectImage
+                )
+                CompactAppChooser(
+                    installedApps = state.installedApps,
+                    letterPosition = state.letterPosition,
+                    selectedApp = secondApp,
+                    hint = R.string.select_second_app,
+                    onItemClicked = { selectedApp ->
+                        onSecondAppChanged(selectedApp)
+                        label(firstApp = firstApp, secondApp = secondApp)
+                    },
+                    selectImage = selectImage
+                )
+                if (bothAppsChosen && sameApp) {
                     Text(
-                        modifier = Modifier.padding(top = 16.dp),
-                        text = stringResource(id = R.string.launch_after),
+                        modifier = Modifier.align(Alignment.Start),
+                        text = stringResource(id = R.string.apps_must_be_different),
+                        color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.labelLarge
                     )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        BeNiceLabel(text = R.string.five_hundred_ms)
-                        Slider(
-                            value = delay,
-                            onValueChange = { delay = it },
-                            valueRange = (500F..2000F),
-                            steps = 14,
-                            modifier = Modifier.weight(1.0F)
-                        )
-                        Text(
-                            text = stringResource(id = R.string.two_secs),
-                            style = MaterialTheme.typography.labelMedium
-                        )
-                    }
-                    if (firstApp != null && secondApp != null) {
-                        BeNiceTextField(
-                            value = label,
-                            resId = R.string.app_pair_label,
-                            message = if (label.isBlank()) {
-                                stringResource(id = R.string.label_cannot_be_blank)
+                }
+                Text(
+                    modifier = Modifier.padding(top = 16.dp),
+                    text = stringResource(id = R.string.launch_after),
+                    style = MaterialTheme.typography.labelLarge
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    BeNiceLabel(text = R.string.five_hundred_ms)
+                    Slider(
+                        value = delay,
+                        onValueChange = { delay = it },
+                        valueRange = (500F..2000F),
+                        steps = 14,
+                        modifier = Modifier.weight(1.0F)
+                    )
+                    Text(
+                        text = stringResource(id = R.string.two_secs),
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                }
+                if (firstApp != null && secondApp != null) {
+                    BeNiceTextField(value = label,
+                        resId = R.string.app_pair_label,
+                        message = if (label.isBlank()) {
+                            stringResource(id = R.string.label_cannot_be_blank)
+                        } else {
+                            if (label.isTooLong()) {
+                                stringResource(id = R.string.too_long)
                             } else {
-                                if (label.isTooLong()) {
-                                    stringResource(id = R.string.too_long)
-                                } else {
-                                    ""
-                                }
-                            },
-                            keyboardType = KeyboardType.Text,
-                            onValueChange = { label = it }
-                        )
-                    }
-                    if (bothAppsChosen) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                AppPairImage(
-                                    firstApp = firstApp!!,
-                                    secondApp = secondApp!!,
-                                    layout = AppPairIconLayout.HORIZONTAL,
-                                    layout == AppPairIconLayout.HORIZONTAL
-                                ) {
-                                    layout = AppPairIconLayout.HORIZONTAL
-                                }
-                                AppPairImage(
-                                    firstApp = firstApp,
-                                    secondApp = secondApp,
-                                    layout = AppPairIconLayout.DIAGONAL,
-                                    layout == AppPairIconLayout.DIAGONAL
-                                ) {
-                                    layout = AppPairIconLayout.DIAGONAL
-                                }
+                                ""
                             }
-                            Text(
-                                modifier = Modifier.padding(top = 8.dp),
-                                text = stringResource(id = R.string.launchers_may_add_artwork),
-                                style = MaterialTheme.typography.bodySmall
-                            )
+                        },
+                        keyboardType = KeyboardType.Text,
+                        onValueChange = { label = it })
+                }
+                if (bothAppsChosen) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            AppPairImage(
+                                firstApp = firstApp!!,
+                                secondApp = secondApp!!,
+                                layout = AppPairIconLayout.Horizontal,
+                                selected = layout == AppPairIconLayout.Horizontal
+                            ) {
+                                layout = AppPairIconLayout.Horizontal
+                            }
+                            AppPairImage(
+                                firstApp = firstApp,
+                                secondApp = secondApp,
+                                layout = AppPairIconLayout.Diagonal,
+                                selected = layout is AppPairIconLayout.Diagonal
+                            ) {
+                                layout = AppPairIconLayout.Diagonal
+                            }
+                            SelectableImage(
+                                firstApp = firstApp,
+                                secondApp = secondApp,
+                                layout = AppPairIconLayout.CustomImage(customImage),
+                                selected = layout is AppPairIconLayout.CustomImage,
+                                selectBitmap = selectImage,
+                                bitmapSelected = { bitmap, _ ->
+                                    bitmap?.run {
+                                        customImage = bitmap
+                                    }
+                                }) {
+                                layout = AppPairIconLayout.CustomImage(customImage)
+                            }
                         }
-                    }
-                    if (canAddDynamicShortcut) {
-                        Row(
-                            modifier = Modifier.clickable {
-                                addDynamicShortcut = !addDynamicShortcut
-                            },
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(text = stringResource(id = R.string.add_dynamic_shortcut))
-                            Checkbox(
-                                checked = addDynamicShortcut,
-                                onCheckedChange = { addDynamicShortcut = it }
-                            )
-                        }
+                        Text(
+                            modifier = Modifier.padding(top = 8.dp),
+                            text = stringResource(id = R.string.launchers_may_add_artwork),
+                            style = MaterialTheme.typography.bodySmall
+                        )
                     }
                 }
-                AnimatedUpOrDownButton(
-                    isUpButton = true,
-                    shouldBeVisible = showUpButton,
-                    coroutineScope = coroutineScope,
-                    scrollState = scrollState
-                )
-                AnimatedUpOrDownButton(
-                    isUpButton = false,
-                    shouldBeVisible = showDownButton,
-                    coroutineScope = coroutineScope,
-                    scrollState = scrollState
-                )
+                if (canAddDynamicShortcut) {
+                    Row(
+                        modifier = Modifier.clickable {
+                            addDynamicShortcut = !addDynamicShortcut
+                        },
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(text = stringResource(id = R.string.add_dynamic_shortcut))
+                        Checkbox(checked = addDynamicShortcut,
+                            onCheckedChange = { addDynamicShortcut = it })
+                    }
+                }
             }
+            AnimatedUpOrDownButton(
+                isUpButton = true,
+                shouldBeVisible = showUpButton,
+                coroutineScope = coroutineScope,
+                scrollState = scrollState
+            )
+            AnimatedUpOrDownButton(
+                isUpButton = false,
+                shouldBeVisible = showDownButton,
+                coroutineScope = coroutineScope,
+                scrollState = scrollState
+            )
         }
-    )
+    })
 }
 
 fun Activity.startActivityCatchExceptions(intent: Intent) {
     try {
         startActivity(intent)
-    } catch (ex: Exception) {
+    } catch (_: Exception) {
         Toast.makeText(this, R.string.something_went_wrong, Toast.LENGTH_LONG).show()
     }
 }

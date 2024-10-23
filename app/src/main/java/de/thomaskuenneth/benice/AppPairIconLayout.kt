@@ -1,5 +1,9 @@
 package de.thomaskuenneth.benice
 
-enum class AppPairIconLayout {
-    HORIZONTAL, DIAGONAL
+import android.graphics.Bitmap
+
+sealed class AppPairIconLayout {
+    data object Horizontal : AppPairIconLayout()
+    data object Diagonal : AppPairIconLayout()
+    data class CustomImage(val bitmap: Bitmap?) : AppPairIconLayout()
 }

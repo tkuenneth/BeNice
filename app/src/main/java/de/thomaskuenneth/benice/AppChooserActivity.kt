@@ -68,8 +68,7 @@ class AppChooserActivity : ComponentActivity() {
                 null
             } else {
                 contentResolver.takePersistableUriPermission(
-                    uri,
-                    FLAG_GRANT_READ_URI_PERMISSION
+                    uri, FLAG_GRANT_READ_URI_PERMISSION
                 )
                 val source = ImageDecoder.createSource(
                     contentResolver, uri
@@ -131,8 +130,7 @@ class AppChooserActivity : ComponentActivity() {
                             .padding(paddingValues = paddingValues)
                             .background(color = MaterialTheme.colorScheme.background)
                     )
-                    SettingsScreen(
-                        removeDynamicShortcutsEnabled = shortcutManager.dynamicShortcuts.size > 0,
+                    SettingsScreen(removeDynamicShortcutsEnabled = shortcutManager.dynamicShortcuts.isNotEmpty(),
                         isOpen = settingsOpen,
                         viewModel = viewModel,
                         sheetClosed = {
@@ -213,33 +211,40 @@ class AppChooserActivity : ComponentActivity() {
 fun createAppPairBitmap(
     firstApp: AppInfo, secondApp: AppInfo, bigWidth: Int, bigHeight: Int, layout: AppPairIconLayout
 ): Bitmap {
-    val smallWidth = bigWidth / 2
-    val smallHeight = bigHeight / 2
-    val verticalMargin = smallHeight / 2F
-    val topFirstBitmap = if (layout == AppPairIconLayout.DIAGONAL) smallHeight.toFloat() else verticalMargin
-    val topSecondBitmap = if (layout == AppPairIconLayout.DIAGONAL) 0F else verticalMargin
     return Bitmap.createBitmap(bigWidth, bigHeight, Bitmap.Config.ARGB_8888).also { bitmap ->
         val bitmapPaint = Paint().also { paint ->
             paint.isAntiAlias = true
             paint.isFilterBitmap = true
         }
         Canvas(bitmap).run {
-            val firstBitmap = firstApp.icon.toBitmap(smallWidth, smallHeight)
-            val secondBitmap = secondApp.icon.toBitmap(smallWidth, smallHeight)
-            drawPaint(Paint().also {
-                it.color = Color.TRANSPARENT
-            })
-            save()
-            density = firstBitmap.density
-            drawBitmap(firstBitmap, 0F, topFirstBitmap, bitmapPaint)
-            restore()
-            density = secondBitmap.density
-            drawBitmap(
-                secondBitmap,
-                smallWidth.toFloat(),
-                topSecondBitmap,
-                bitmapPaint
-            )
+            if (layout !is AppPairIconLayout.CustomImage) {
+                val smallWidth = bigWidth / 2
+                val smallHeight = bigHeight / 2
+                val verticalMargin = smallHeight / 2F
+                val topFirstBitmap =
+                    if (layout == AppPairIconLayout.Diagonal) smallHeight.toFloat() else verticalMargin
+                val topSecondBitmap =
+                    if (layout == AppPairIconLayout.Diagonal) 0F else verticalMargin
+                val firstBitmap = firstApp.icon.toBitmap(smallWidth, smallHeight)
+                val secondBitmap = secondApp.icon.toBitmap(smallWidth, smallHeight)
+                drawPaint(Paint().also {
+                    it.color = Color.TRANSPARENT
+                })
+                save()
+                density = firstBitmap.density
+                drawBitmap(firstBitmap, 0F, topFirstBitmap, bitmapPaint)
+                restore()
+                density = secondBitmap.density
+                drawBitmap(
+                    secondBitmap, smallWidth.toFloat(), topSecondBitmap, bitmapPaint
+                )
+            } else {
+                layout.bitmap?.let { bitmap ->
+                    val scaled = Bitmap.createScaledBitmap(bitmap, bigWidth, bigHeight, true)
+                    drawBitmap(scaled, 0F, 0F, bitmapPaint)
+                    scaled.recycle()
+                }
+            }
         }
     }
 }

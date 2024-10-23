@@ -36,7 +36,11 @@
     <string name="image">Image</string>
     <string name="add_dynamic_shortcut">Add dynamic shortcut</string>
     <string name="remove_all_dynamic_shortcuts">Remove all dynamic shortcuts</string>
+
     <string name="arrange_horizontally">Arrange app icons horizontally</string>
-    <string name="arrange_vertically">Arrange app icons vertically</string>
+    <string name="arrange_diagonally">Arrange app icons diagonally</string>
+    <string name="show_custom_icon">Show a custom icon</string>
+
     <string name="launchers_may_add_artwork">Please note that launchers may add additional artwork</string>
+    <string name="choose_image">Choose image</string>
 </resources>
