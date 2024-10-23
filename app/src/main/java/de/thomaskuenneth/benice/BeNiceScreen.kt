@@ -183,6 +183,9 @@ fun AppPairDialog(
     var addDynamicShortcut by remember { mutableStateOf(true) }
     var layout: AppPairIconLayout by remember { mutableStateOf(AppPairIconLayout.Horizontal) }
     var customImage by remember { mutableStateOf<Bitmap?>(null) }
+    val updateLayout = {
+        layout = AppPairIconLayout.CustomImage(customImage)
+    }
     AlertDialog(onDismissRequest = onDismissRequest, confirmButton = {
         Button(enabled = label.isNotBlank() && !label.isTooLong() && bothAppsChosen && !sameApp,
             onClick = {
@@ -298,8 +301,7 @@ fun AppPairDialog(
                             ) {
                                 layout = AppPairIconLayout.Diagonal
                             }
-                            SelectableImage(
-                                firstApp = firstApp,
+                            SelectableImage(firstApp = firstApp,
                                 secondApp = secondApp,
                                 layout = AppPairIconLayout.CustomImage(customImage),
                                 selected = layout is AppPairIconLayout.CustomImage,
@@ -307,9 +309,10 @@ fun AppPairDialog(
                                 bitmapSelected = { bitmap, _ ->
                                     bitmap?.run {
                                         customImage = bitmap
+                                        updateLayout()
                                     }
                                 }) {
-                                layout = AppPairIconLayout.CustomImage(customImage)
+                                updateLayout()
                             }
                         }
                         Text(
