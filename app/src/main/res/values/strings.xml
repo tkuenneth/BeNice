@@ -41,6 +41,6 @@
     <string name="arrange_diagonally">Arrange app icons diagonally</string>
     <string name="show_custom_icon">Show a custom icon</string>
 
-    <string name="launchers_may_add_artwork">Please note that launchers may add additional artwork</string>
+    <string name="launchers_may_add_artwork">Please note that launchers may add additional artwork or whitespace</string>
     <string name="choose_image">Choose image</string>
 </resources>

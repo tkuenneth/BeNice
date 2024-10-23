@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -251,7 +252,9 @@ fun AppPairDialog(
                         onValueChange = { delay = it },
                         valueRange = (500F..2000F),
                         steps = 14,
-                        modifier = Modifier.weight(1.0F)
+                        modifier = Modifier
+                            .weight(1.0F)
+                            .padding(vertical = 8.dp)
                     )
                     Text(
                         text = stringResource(id = R.string.two_secs),
@@ -275,7 +278,10 @@ fun AppPairDialog(
                 }
                 if (bothAppsChosen) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(
+                            modifier = Modifier.horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
                             AppPairImage(
                                 firstApp = firstApp!!,
                                 secondApp = secondApp!!,
