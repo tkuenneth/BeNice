@@ -4,10 +4,14 @@ import android.graphics.drawable.BitmapDrawable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -16,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -30,6 +35,7 @@ fun AppChooser(
     columns: Int,
     letterPosition: Int,
     showSpecials: Boolean,
+    shouldAddEmptySpace: Boolean = false,
     onClick: (AppInfo) -> Unit,
     onLongClick: (AppInfo) -> Unit,
     selectBitmap: () -> Unit
@@ -57,8 +63,12 @@ fun AppChooser(
             textAlign = TextAlign.Start
         )
     } else {
+        val padding =
+            with(LocalDensity.current) { WindowInsets.navigationBars.getBottom(this).toDp() }
         LazyVerticalGrid(
-            modifier = Modifier.fillMaxSize(), columns = GridCells.Fixed(count = columns)
+            modifier = Modifier
+                .fillMaxSize(),
+            columns = GridCells.Fixed(count = columns)
         ) {
             var last = ""
             var counter = 0
@@ -105,13 +115,24 @@ fun AppChooser(
                     }
                 }
                 item(key = counter++) {
-                    AppChooserItem(appInfo = appInfo,
-                        modifier = Modifier.combinedClickable(onClick = { onClick(appInfo) },
+                    AppChooserItem(
+                        appInfo = appInfo,
+                        modifier = Modifier.combinedClickable(
+                            onClick = { onClick(appInfo) },
                             onLongClick = {
                                 haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                                 onLongClick(appInfo)
                             },
                             onLongClickLabel = stringResource(id = R.string.open_context_menu)
+                        )
+                    )
+                }
+            }
+            if (shouldAddEmptySpace) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    Spacer(
+                        modifier = Modifier.padding(
+                            bottom = padding
                         )
                     )
                 }

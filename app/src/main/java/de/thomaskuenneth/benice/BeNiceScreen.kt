@@ -93,6 +93,7 @@ fun BeNiceScreen(
                 },
                 letterPosition = state.letterPosition,
                 showSpecials = false,
+                shouldAddEmptySpace = true,
                 onClick = onClick,
                 onLongClick = { appInfo ->
                     contextMenuAppInfo = appInfo
