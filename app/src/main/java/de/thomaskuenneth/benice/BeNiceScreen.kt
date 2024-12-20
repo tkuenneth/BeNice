@@ -57,6 +57,7 @@ fun BeNiceScreen(
     onClick: (AppInfo) -> Unit,
     onAddLinkClicked: (AppInfo) -> Unit,
     onOpenAppInfoClicked: (AppInfo) -> Unit,
+    onCopyNamesClicked: (AppInfo) -> Unit,
     onAppsForAppPairSelected: (AppInfo, AppInfo, Long, String, Boolean, AppPairIconLayout) -> Unit,
     selectBitmap: () -> Unit,
     modifier: Modifier
@@ -109,7 +110,7 @@ fun BeNiceScreen(
                     .align(alignment = Alignment.BottomEnd)
                     .padding(
                         WindowInsets.navigationBars
-                            .union(WindowInsets(16.dp, 16.dp, 16.dp, 16.dp))
+                            .union(WindowInsets(48.dp, 48.dp, 48.dp, 48.dp))
                             .asPaddingValues()
                     )
             ) {
@@ -131,6 +132,7 @@ fun BeNiceScreen(
                 firstApp = contextMenuAppInfo
                 showAppPairDialog = true
             },
+            onCopyNamesClicked = onCopyNamesClicked,
             onDismissRequest = { contextMenuAppInfo = null })
     }
     if (showAppPairDialog) {

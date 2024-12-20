@@ -1,6 +1,8 @@
 package de.thomaskuenneth.benice
 
 import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
@@ -44,7 +46,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.ViewModelProvider
@@ -60,6 +64,7 @@ class AppChooserActivity : ComponentActivity() {
     private lateinit var prefs: SharedPreferences
     private lateinit var windowSizeClass: WindowSizeClass
     private lateinit var viewModel: ShowImageMenuItemViewModel
+    private lateinit var clipboardManager: ClipboardManager
 
     private val launcher: ActivityResultLauncher<PickVisualMediaRequest> =
         registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
@@ -93,6 +98,7 @@ class AppChooserActivity : ComponentActivity() {
         viewModel.setLetterPosition(prefs.getInt(KEY_LETTER_POSITION, 1))
         viewModel.setAppVersionString(appVersionString = appVersion())
         windowSizeClass = computeWindowSizeClass()
+        clipboardManager = getSystemService(ClipboardManager::class.java)
         setContent {
             MaterialTheme(
                 colorScheme = defaultColorScheme()
@@ -124,6 +130,7 @@ class AppChooserActivity : ComponentActivity() {
                         onAddLinkClicked = ::onAddLinkClicked,
                         onOpenAppInfoClicked = ::onOpenAppInfoClicked,
                         onAppsForAppPairSelected = ::onAppsForAppPairSelected,
+                        onCopyNamesClicked = ::onCopyNamesClicked,
                         selectBitmap = ::selectBitmap,
                         modifier = Modifier
                             .fillMaxSize()
@@ -206,6 +213,11 @@ class AppChooserActivity : ComponentActivity() {
     private fun selectBitmap() {
         viewModel.setBitmap(null)
         launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+    }
+
+    private fun onCopyNamesClicked(appInfo: AppInfo) {
+        val text = "${appInfo.packageName}\n${appInfo.className}"
+        clipboardManager.setPrimaryClip(ClipData.newPlainText(text, text))
     }
 }
 

@@ -43,4 +43,6 @@
 
     <string name="launchers_may_add_artwork">Please note that launchers may add additional artwork or whitespace</string>
     <string name="choose_image">Choose image</string>
+
+    <string name="copy_names">Copy names</string>
 </resources>

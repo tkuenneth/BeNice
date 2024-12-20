@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Launch
 import androidx.compose.material.icons.filled.AddLink
+import androidx.compose.material.icons.filled.CopyAll
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,6 +25,7 @@ fun ContextModalBottomSheet(
     onAddLinkClicked: (AppInfo) -> Unit,
     onOpenAppInfoClicked: (AppInfo) -> Unit,
     onCreateAppPairClicked: (AppInfo) -> Unit,
+    onCopyNamesClicked: (AppInfo) -> Unit,
     onDismissRequest: () -> Unit
 ) {
     ModalBottomSheet(
@@ -50,6 +52,11 @@ fun ContextModalBottomSheet(
             onClick = { closeSheet { onCreateAppPairClicked(contextMenuAppInfo) } },
             imageVector = Icons.Default.Create,
             textRes = R.string.create_app_pair
+        )
+        MenuItem(
+            onClick = { closeSheet { onCopyNamesClicked(contextMenuAppInfo) } },
+            imageVector = Icons.Default.CopyAll,
+            textRes = R.string.copy_names
         )
         Spacer(modifier = Modifier.navigationBarsPadding())
     }
