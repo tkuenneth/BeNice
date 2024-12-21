@@ -6,6 +6,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
@@ -17,11 +19,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -55,6 +59,9 @@ fun AppChooser(
         )
     }
     val haptics = LocalHapticFeedback.current
+    val displayCutoutPadding = WindowInsets.displayCutout.asPaddingValues()
+    val left = displayCutoutPadding.calculateLeftPadding(LocalLayoutDirection.current)
+    val right = displayCutoutPadding.calculateRightPadding(LocalLayoutDirection.current)
     if (installedApps.isEmpty()) {
         Text(
             text = stringResource(R.string.no_apps),
@@ -63,12 +70,10 @@ fun AppChooser(
             textAlign = TextAlign.Start
         )
     } else {
-        val padding =
+        val bottomPadding =
             with(LocalDensity.current) { WindowInsets.navigationBars.getBottom(this).toDp() }
         LazyVerticalGrid(
-            modifier = Modifier
-                .fillMaxSize(),
-            columns = GridCells.Fixed(count = columns)
+            modifier = Modifier.fillMaxSize(), columns = GridCells.Fixed(count = columns)
         ) {
             var last = ""
             var counter = 0
@@ -100,6 +105,7 @@ fun AppChooser(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp, vertical = 8.dp)
+                                    .clip(shape = MaterialTheme.shapes.small)
                                     .background(color = MaterialTheme.colorScheme.secondaryContainer)
                                     .padding(horizontal = 8.dp),
                                 text = current,
@@ -116,15 +122,22 @@ fun AppChooser(
                 }
                 item(key = counter++) {
                     AppChooserItem(
-                        appInfo = appInfo,
-                        modifier = Modifier.combinedClickable(
-                            onClick = { onClick(appInfo) },
-                            onLongClick = {
-                                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                                onLongClick(appInfo)
-                            },
-                            onLongClickLabel = stringResource(id = R.string.open_context_menu)
-                        )
+                        appInfo = appInfo, modifier = Modifier
+                            .padding(
+                                start = maxOf(left, 16.dp),
+                                end = maxOf(right, 16.dp),
+                                top = 8.dp,
+                                bottom = 8.dp
+                            )
+                            .clip(shape = MaterialTheme.shapes.small)
+                            .combinedClickable(
+                                onClick = { onClick(appInfo) },
+                                onLongClick = {
+                                    haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onLongClick(appInfo)
+                                },
+                                onLongClickLabel = stringResource(id = R.string.open_context_menu)
+                            )
                     )
                 }
             }
@@ -132,7 +145,7 @@ fun AppChooser(
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Spacer(
                         modifier = Modifier.padding(
-                            bottom = padding
+                            bottom = bottomPadding
                         )
                     )
                 }

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.rememberScrollState
@@ -108,11 +109,8 @@ fun BeNiceScreen(
                     secondApp = null
                 }, modifier = Modifier
                     .align(alignment = Alignment.BottomEnd)
-                    .padding(
-                        WindowInsets.navigationBars
-                            .union(WindowInsets(48.dp, 48.dp, 48.dp, 48.dp))
-                            .asPaddingValues()
-                    )
+                    .padding(all = 16.dp)
+                    .navigationBarsPadding()
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,

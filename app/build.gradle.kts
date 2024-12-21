@@ -12,7 +12,7 @@ android {
         applicationId = "de.thomaskuenneth.benice"
         minSdk = 28
         targetSdk = 35
-        versionCode = 40
+        versionCode = 49
         versionName = "1.2.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
