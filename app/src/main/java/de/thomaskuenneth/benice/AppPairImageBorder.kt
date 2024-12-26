@@ -9,6 +9,6 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun Modifier.appPairImageBorder(selected: Boolean): Modifier = then(
     if (selected) Modifier.border(
-        width = 1.dp, color = MaterialTheme.colorScheme.primary
+        width = 1.dp, color = MaterialTheme.colorScheme.primary, shape = MaterialTheme.shapes.small
     ) else Modifier
 )

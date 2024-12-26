@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 
+val APP_ICON_IMAGE_SIZE = 48.dp
 
 @Composable
 fun AppIconImage(drawable: Drawable) {
@@ -24,7 +25,7 @@ fun AppIconImage(drawable: Drawable) {
     drawable.setBounds(0, 0, canvas.width, canvas.height)
     drawable.draw(canvas)
     Box(
-        modifier = Modifier.size(48.dp),
+        modifier = Modifier.size(APP_ICON_IMAGE_SIZE),
         contentAlignment = Alignment.Center
     ) {
         Image(

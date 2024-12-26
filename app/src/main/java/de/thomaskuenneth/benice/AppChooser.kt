@@ -4,6 +4,7 @@ import android.graphics.drawable.BitmapDrawable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -12,12 +13,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.toArgb
@@ -101,22 +104,31 @@ fun AppChooser(
                     if (current != last) {
                         last = current
                         header(key = counter++) {
-                            Text(
+                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                                    .padding(
+                                        start = maxOf(left, 16.dp),
+                                        end = maxOf(right, 16.dp),
+                                        top = 8.dp,
+                                        bottom = 8.dp
+                                    )
                                     .clip(shape = MaterialTheme.shapes.small)
-                                    .background(color = MaterialTheme.colorScheme.secondaryContainer)
-                                    .padding(horizontal = 8.dp),
-                                text = current,
-                                style = MaterialTheme.typography.labelLarge,
-                                textAlign = when (letterPosition) {
-                                    0 -> TextAlign.Left
-                                    1 -> TextAlign.Center
-                                    else -> TextAlign.Right
-                                },
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
+                                    .background(color = MaterialTheme.colorScheme.secondaryContainer),
+                                contentAlignment = when (letterPosition) {
+                                    0 -> Alignment.CenterStart
+                                    1 -> Alignment.Center
+                                    else -> Alignment.CenterEnd
+                                }
+                            ) {
+                                Text(
+                                    modifier = Modifier.width(APP_ICON_IMAGE_SIZE),
+                                    text = current,
+                                    style = MaterialTheme.typography.labelLarge,
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
                         }
                     }
                 }
