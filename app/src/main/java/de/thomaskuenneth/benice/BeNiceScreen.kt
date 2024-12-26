@@ -85,8 +85,9 @@ fun BeNiceScreen(
             AppChooser(
                 installedApps = state.installedApps,
                 columns = when (windowSizeClass.windowWidthSizeClass) {
-                    WindowWidthSizeClass.MEDIUM -> 2
+                    WindowWidthSizeClass.MEDIUM -> if (state.threeColumnsOnMediumScreens) 3 else 2
                     WindowWidthSizeClass.EXPANDED -> 3
+                    WindowWidthSizeClass.COMPACT -> if (state.twoColumnsOnSmallScreens) 2 else 1
                     else -> 1
                 },
                 letterPosition = state.letterPosition,
@@ -103,7 +104,8 @@ fun BeNiceScreen(
                     showAppPairDialog = true
                     firstApp = null
                     secondApp = null
-                }, modifier = Modifier
+                },
+                modifier = Modifier
                     .align(alignment = Alignment.BottomEnd)
                     .padding(all = 16.dp)
                     .navigationBarsPadding()

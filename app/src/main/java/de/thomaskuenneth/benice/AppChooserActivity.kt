@@ -55,6 +55,8 @@ import androidx.window.core.layout.WindowSizeClass
 import androidx.window.layout.WindowMetricsCalculator
 
 private const val KEY_LETTER_POSITION = "letterPosition"
+private const val KEY_TWO_COLUMNS_ON_SMALL_SCREENS = "twoColumnsOnSmallScreens"
+private const val KEY_THREE_COLUMNS_ON_MEDIUM_SCREENS = "threeColumnsOnMediumScreens"
 
 class AppChooserActivity : ComponentActivity() {
 
@@ -93,8 +95,20 @@ class AppChooserActivity : ComponentActivity() {
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
         enableEdgeToEdge()
         val viewModel by viewModels<BeNiceViewModel>()
-        viewModel.setLetterPosition(prefs.getInt(KEY_LETTER_POSITION, 1))
-        viewModel.setAppVersionString(appVersionString = appVersion())
+        with(viewModel) {
+            setLetterPosition(prefs.getInt(KEY_LETTER_POSITION, 1))
+            setAppVersionString(appVersionString = appVersion())
+            setTwoColumnsOnSmallScreens(
+                prefs.getBoolean(
+                    KEY_TWO_COLUMNS_ON_SMALL_SCREENS, false
+                )
+            )
+            setThreeColumnsOnMediumScreens(
+                prefs.getBoolean(
+                    KEY_THREE_COLUMNS_ON_MEDIUM_SCREENS, false
+                )
+            )
+        }
         windowSizeClass = computeWindowSizeClass()
         clipboardManager = getSystemService(ClipboardManager::class.java)
         setContent {
@@ -140,7 +154,13 @@ class AppChooserActivity : ComponentActivity() {
                         viewModel = viewModel,
                         sheetClosed = {
                             settingsOpen = false
-                            prefs.edit().putInt(KEY_LETTER_POSITION, state.letterPosition).apply()
+                            with(state) {
+                                prefs.edit().putInt(KEY_LETTER_POSITION, letterPosition).putBoolean(
+                                    KEY_TWO_COLUMNS_ON_SMALL_SCREENS, twoColumnsOnSmallScreens
+                                ).putBoolean(
+                                    KEY_THREE_COLUMNS_ON_MEDIUM_SCREENS, threeColumnsOnMediumScreens
+                                ).apply()
+                            }
                         },
                         removeAllDynamicShortcutsCallback = {
                             shortcutManager.removeDynamicShortcuts(shortcutManager.dynamicShortcuts.map { it.id })

@@ -45,4 +45,8 @@
     <string name="choose_image">Choose image</string>
 
     <string name="copy_names">Copy names</string>
+
+    <string name="two_columns_on_small_screens">Two columns on small screens</string>
+    <string name="three_columns_on_medium_screens">Three columns on medium screens</string>
+
 </resources>

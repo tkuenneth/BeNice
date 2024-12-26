@@ -15,6 +15,8 @@ data class BeNiceScreenUiState(
     val isLoading: Boolean = false,
     val installedApps: List<AppInfo> = emptyList(),
     val letterPosition: Int = 1,
+    val twoColumnsOnSmallScreens: Boolean = false,
+    val threeColumnsOnMediumScreens: Boolean = false,
     val appVersionString: String = ""
 )
 
@@ -51,6 +53,22 @@ class BeNiceViewModel : ViewModel() {
         _uiState.update { currentState ->
             currentState.copy(
                 appVersionString = appVersionString
+            )
+        }
+    }
+
+    fun setTwoColumnsOnSmallScreens(twoColumnsOnSmallScreens: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                twoColumnsOnSmallScreens = twoColumnsOnSmallScreens
+            )
+        }
+    }
+
+    fun setThreeColumnsOnMediumScreens(threeColumnsOnMediumScreens: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                threeColumnsOnMediumScreens = threeColumnsOnMediumScreens
             )
         }
     }

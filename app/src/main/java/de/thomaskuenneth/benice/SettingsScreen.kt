@@ -1,5 +1,6 @@
 package de.thomaskuenneth.benice
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -65,20 +66,33 @@ fun SettingsScreen(
                 options.forEachIndexed { index, label ->
                     SegmentedButton(
                         shape = SegmentedButtonDefaults.itemShape(
-                            index = index,
-                            count = options.size
-                        ),
-                        onClick = {
+                            index = index, count = options.size
+                        ), onClick = {
                             viewModel.setLetterPosition(index)
-                        },
-                        selected = index == state.letterPosition
+                        }, selected = index == state.letterPosition
                     ) {
                         Text(label)
                     }
                 }
             }
-            Button(
-                enabled = removeDynamicShortcutsEnabled,
+            Column(
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(top = 16.dp),
+                horizontalAlignment = Alignment.Start
+            ) {
+                BeNiceCheckbox(
+                    checked = state.twoColumnsOnSmallScreens,
+                    onCheckedChange = { viewModel.setTwoColumnsOnSmallScreens(!state.twoColumnsOnSmallScreens) },
+                    text = stringResource(R.string.two_columns_on_small_screens)
+                )
+                BeNiceCheckbox(
+                    checked = state.threeColumnsOnMediumScreens,
+                    onCheckedChange = { viewModel.setThreeColumnsOnMediumScreens(!state.threeColumnsOnMediumScreens) },
+                    text = stringResource(R.string.three_columns_on_medium_screens)
+                )
+            }
+            Button(enabled = removeDynamicShortcutsEnabled,
                 modifier = Modifier
                     .align(Alignment.CenterHorizontally)
                     .padding(top = 16.dp),
@@ -86,8 +100,7 @@ fun SettingsScreen(
                     closeSheet {
                         removeAllDynamicShortcutsCallback()
                     }
-                }
-            ) {
+                }) {
                 Text(text = stringResource(id = R.string.remove_all_dynamic_shortcuts))
             }
             Spacer(modifier = Modifier.height(32.dp))
@@ -97,12 +110,10 @@ fun SettingsScreen(
                 style = MaterialTheme.typography.bodySmall
             )
             Spacer(
-                modifier = Modifier
-                    .padding(
-                        WindowInsets.navigationBars
-                            .union(WindowInsets(bottom = 16.dp))
-                            .asPaddingValues()
-                    )
+                modifier = Modifier.padding(
+                    WindowInsets.navigationBars.union(WindowInsets(bottom = 16.dp))
+                        .asPaddingValues()
+                )
             )
         }
     }
