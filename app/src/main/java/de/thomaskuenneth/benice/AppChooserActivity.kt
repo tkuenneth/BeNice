@@ -57,6 +57,7 @@ import androidx.window.layout.WindowMetricsCalculator
 private const val KEY_LETTER_POSITION = "letterPosition"
 private const val KEY_TWO_COLUMNS_ON_SMALL_SCREENS = "twoColumnsOnSmallScreens"
 private const val KEY_THREE_COLUMNS_ON_MEDIUM_SCREENS = "threeColumnsOnMediumScreens"
+private const val KEY_TWO_COLUMNS_ON_LARGE_SCREENS = "twoColumnsOnLargeScreens"
 
 class AppChooserActivity : ComponentActivity() {
 
@@ -106,6 +107,11 @@ class AppChooserActivity : ComponentActivity() {
             setThreeColumnsOnMediumScreens(
                 prefs.getBoolean(
                     KEY_THREE_COLUMNS_ON_MEDIUM_SCREENS, false
+                )
+            )
+            setTwoColumnsOnLargeScreens(
+                prefs.getBoolean(
+                    KEY_TWO_COLUMNS_ON_LARGE_SCREENS, false
                 )
             )
         }
@@ -159,6 +165,8 @@ class AppChooserActivity : ComponentActivity() {
                                     KEY_TWO_COLUMNS_ON_SMALL_SCREENS, twoColumnsOnSmallScreens
                                 ).putBoolean(
                                     KEY_THREE_COLUMNS_ON_MEDIUM_SCREENS, threeColumnsOnMediumScreens
+                                ).putBoolean(
+                                    KEY_TWO_COLUMNS_ON_LARGE_SCREENS, twoColumnsOnLargeScreens
                                 ).apply()
                             }
                         },

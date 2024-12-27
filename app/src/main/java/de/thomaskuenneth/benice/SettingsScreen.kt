@@ -91,6 +91,11 @@ fun SettingsScreen(
                     onCheckedChange = { viewModel.setThreeColumnsOnMediumScreens(!state.threeColumnsOnMediumScreens) },
                     text = stringResource(R.string.three_columns_on_medium_screens)
                 )
+                BeNiceCheckbox(
+                    checked = state.twoColumnsOnLargeScreens,
+                    onCheckedChange = { viewModel.setTwoColumnsOnLargeScreens(!state.twoColumnsOnLargeScreens) },
+                    text = stringResource(R.string.two_columns_on_large_screens)
+                )
             }
             Button(enabled = removeDynamicShortcutsEnabled,
                 modifier = Modifier

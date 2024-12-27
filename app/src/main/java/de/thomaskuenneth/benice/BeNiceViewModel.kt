@@ -17,6 +17,7 @@ data class BeNiceScreenUiState(
     val letterPosition: Int = 1,
     val twoColumnsOnSmallScreens: Boolean = false,
     val threeColumnsOnMediumScreens: Boolean = false,
+    val twoColumnsOnLargeScreens: Boolean = false,
     val appVersionString: String = ""
 )
 
@@ -69,6 +70,14 @@ class BeNiceViewModel : ViewModel() {
         _uiState.update { currentState ->
             currentState.copy(
                 threeColumnsOnMediumScreens = threeColumnsOnMediumScreens
+            )
+        }
+    }
+
+    fun setTwoColumnsOnLargeScreens(twoColumnsOnLargeScreens: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                twoColumnsOnLargeScreens = twoColumnsOnLargeScreens
             )
         }
     }

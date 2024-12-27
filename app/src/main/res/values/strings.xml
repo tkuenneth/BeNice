@@ -48,5 +48,6 @@
 
     <string name="two_columns_on_small_screens">Two columns on small screens</string>
     <string name="three_columns_on_medium_screens">Three columns on medium screens</string>
+    <string name="two_columns_on_large_screens">Two columns on large screens</string>
 
 </resources>

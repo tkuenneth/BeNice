@@ -86,7 +86,7 @@ fun BeNiceScreen(
                 installedApps = state.installedApps,
                 columns = when (windowSizeClass.windowWidthSizeClass) {
                     WindowWidthSizeClass.MEDIUM -> if (state.threeColumnsOnMediumScreens) 3 else 2
-                    WindowWidthSizeClass.EXPANDED -> 3
+                    WindowWidthSizeClass.EXPANDED -> if (state.twoColumnsOnLargeScreens) 2 else 3
                     WindowWidthSizeClass.COMPACT -> if (state.twoColumnsOnSmallScreens) 2 else 1
                     else -> 1
                 },
