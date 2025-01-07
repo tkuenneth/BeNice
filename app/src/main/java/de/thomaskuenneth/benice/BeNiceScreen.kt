@@ -51,7 +51,7 @@ fun BeNiceScreen(
     canAddDynamicShortcut: Boolean,
     windowSizeClass: WindowSizeClass,
     state: BeNiceScreenUiState,
-    onClick: (AppInfo) -> Unit,
+    onClick: (AppInfo, Boolean) -> Unit,
     onAddLinkClicked: (AppInfo) -> Unit,
     onOpenAppInfoClicked: (AppInfo) -> Unit,
     onCopyNamesClicked: (AppInfo) -> Unit,

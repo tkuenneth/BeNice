@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Be nice</string>
     <string name="open_context_menu">Opens a context menu</string>
+    <string name="launch_adjacent">Launch adjacent</string>
     <string name="launch">Launch</string>
     <string name="add_link">Add link</string>
     <string name="no_apps">No apps found</string>

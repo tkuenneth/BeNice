@@ -21,13 +21,29 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun MenuItem(
+    enabled: Boolean = true, onClick: () -> Unit, imageVector: ImageVector, @StringRes textRes: Int
+) {
+    MenuItem(
+        enabled = enabled,
+        onClick = onClick,
+        textRes = textRes,
+    ) @Composable {
+        Image(
+            imageVector = imageVector,
+            contentDescription = null,
+            colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary)
+        )
+    }
+}
+
+@Composable
+fun MenuItem(
     enabled: Boolean = true,
     onClick: () -> Unit,
-    imageVector: ImageVector,
-    @StringRes textRes: Int
+    @StringRes textRes: Int,
+    content: @Composable () -> Unit
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    Row(verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
             .then(if (enabled) {
@@ -38,17 +54,11 @@ fun MenuItem(
                 Modifier
             })
             .padding(all = 16.dp)
-            .alpha(if (enabled) 1.0F else 0.6F)
-    ) {
-        Image(
-            imageVector = imageVector,
-            contentDescription = null,
-            colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary)
-        )
+            .alpha(if (enabled) 1.0F else 0.6F)) {
+        content()
         Spacer(modifier = Modifier.width(16.dp))
         Text(
-            text = stringResource(id = textRes),
-            color = MaterialTheme.colorScheme.primary
+            text = stringResource(id = textRes), color = MaterialTheme.colorScheme.primary
         )
     }
 }

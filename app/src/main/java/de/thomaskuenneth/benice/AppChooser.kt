@@ -43,7 +43,7 @@ fun AppChooser(
     letterPosition: Int,
     showSpecials: Boolean,
     shouldAddEmptySpace: Boolean = false,
-    onClick: (AppInfo) -> Unit,
+    onClick: (AppInfo, Boolean) -> Unit,
     onLongClick: (AppInfo) -> Unit,
     selectBitmap: () -> Unit
 ) {
@@ -58,7 +58,7 @@ fun AppChooser(
                     context.resources, R.drawable.baseline_open_in_browser_24, context.theme
                 )!!.also {
                     it.setTint(iconColor)
-                })
+                }), true
         )
     }
     val haptics = LocalHapticFeedback.current
@@ -93,7 +93,7 @@ fun AppChooser(
                                     className = uri.toString(),
                                     label = context.getString(R.string.image),
                                     icon = BitmapDrawable(context.resources, bitmap)
-                                )
+                                ), true
                             )
                         }
                     })
@@ -143,7 +143,8 @@ fun AppChooser(
                             )
                             .clip(shape = MaterialTheme.shapes.small)
                             .combinedClickable(
-                                onClick = { onClick(appInfo) },
+                                onClick = { onClick(appInfo, true) },
+                                onDoubleClick = { onClick(appInfo, false) },
                                 onLongClick = {
                                     haptics.performHapticFeedback(HapticFeedbackType.LongPress)
                                     onLongClick(appInfo)

@@ -179,10 +179,10 @@ class AppChooserActivity : ComponentActivity() {
         viewModel.queryInstalledApps(packageManager)
     }
 
-    private fun onClick(appInfo: AppInfo) {
+    private fun onClick(appInfo: AppInfo, launchAdjacent: Boolean) {
         with(appInfo) {
             launchApp(
-                packageName = packageName, className = className, launchAdjacent = true
+                packageName = packageName, className = className, launchAdjacent = launchAdjacent
             )
         }
     }
