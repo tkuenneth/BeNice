@@ -9,9 +9,12 @@ import androidx.compose.ui.res.stringResource
 
 @Composable
 fun BeNiceLabel(@StringRes text: Int, modifier: Modifier = Modifier) {
+    BeNiceLabel(text = stringResource(id = text), modifier = modifier)
+}
+
+@Composable
+fun BeNiceLabel(text: String, modifier: Modifier = Modifier) {
     Text(
-        text = stringResource(id = text),
-        style = MaterialTheme.typography.labelMedium,
-        modifier = modifier
+        text = text, style = MaterialTheme.typography.labelMedium, modifier = modifier
     )
 }

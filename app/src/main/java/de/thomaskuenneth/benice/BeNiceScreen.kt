@@ -45,6 +45,9 @@ import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
 import kotlinx.coroutines.launch
 
+private const val launchDelayMin = 500F
+private const val launchDelayMax = 5000F
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BeNiceScreen(
@@ -171,7 +174,7 @@ fun AppPairDialog(
     val bothAppsChosen: Boolean by remember(
         firstApp, secondApp
     ) { mutableStateOf(firstApp != null && secondApp != null) }
-    var delay by remember { mutableFloatStateOf(500F) }
+    var delay by remember { mutableFloatStateOf(launchDelayMin) }
     var label by remember(firstApp, secondApp) {
         mutableStateOf(
             label(
@@ -248,19 +251,21 @@ fun AppPairDialog(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    BeNiceLabel(text = R.string.five_hundred_ms)
+                    BeNiceLabel(text = stringResource(id = R.string.n_ms, launchDelayMin.toInt()))
                     Slider(
                         value = delay,
                         onValueChange = { delay = it },
-                        valueRange = (500F..2000F),
+                        valueRange = (launchDelayMin..launchDelayMax),
                         steps = 14,
                         modifier = Modifier
                             .weight(1.0F)
                             .padding(vertical = 8.dp)
                     )
-                    Text(
-                        text = stringResource(id = R.string.two_secs),
-                        style = MaterialTheme.typography.labelMedium
+                    BeNiceLabel(
+                        text = stringResource(
+                            id = R.string.n_secs,
+                            launchDelayMax.toInt() / 1000
+                        )
                     )
                 }
                 if (firstApp != null && secondApp != null) {
