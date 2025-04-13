@@ -10,3 +10,4 @@ gradle.xml
 misc.xml
 runConfigurations.xml
 emulatorDisplays.xml
+kotlinc.xml
