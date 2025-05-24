@@ -15,3 +15,5 @@
 .cxx
 local.properties
 Browse.plb
+*.lock
+/docs/_site
