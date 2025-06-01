@@ -17,7 +17,6 @@ import android.graphics.Color
 import android.graphics.ImageDecoder
 import android.graphics.Paint
 import android.graphics.drawable.Icon
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -48,7 +47,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.edit
+import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.scale
+import androidx.core.graphics.withSave
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModelProvider
 import androidx.preference.PreferenceManager
 import androidx.window.core.layout.WindowSizeClass
@@ -161,13 +165,16 @@ class AppChooserActivity : ComponentActivity() {
                         sheetClosed = {
                             settingsOpen = false
                             with(state) {
-                                prefs.edit().putInt(KEY_LETTER_POSITION, letterPosition).putBoolean(
-                                    KEY_TWO_COLUMNS_ON_SMALL_SCREENS, twoColumnsOnSmallScreens
-                                ).putBoolean(
-                                    KEY_THREE_COLUMNS_ON_MEDIUM_SCREENS, threeColumnsOnMediumScreens
-                                ).putBoolean(
-                                    KEY_TWO_COLUMNS_ON_LARGE_SCREENS, twoColumnsOnLargeScreens
-                                ).apply()
+                                prefs.edit {
+                                    putInt(KEY_LETTER_POSITION, letterPosition).putBoolean(
+                                        KEY_TWO_COLUMNS_ON_SMALL_SCREENS, twoColumnsOnSmallScreens
+                                    ).putBoolean(
+                                        KEY_THREE_COLUMNS_ON_MEDIUM_SCREENS,
+                                        threeColumnsOnMediumScreens
+                                    ).putBoolean(
+                                        KEY_TWO_COLUMNS_ON_LARGE_SCREENS, twoColumnsOnLargeScreens
+                                    )
+                                }
                             }
                         },
                         removeAllDynamicShortcutsCallback = {
@@ -198,7 +205,7 @@ class AppChooserActivity : ComponentActivity() {
 
     private fun onOpenAppInfoClicked(appInfo: AppInfo) {
         Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).run {
-            data = Uri.parse("package:${appInfo.packageName}")
+            data = "package:${appInfo.packageName}".toUri()
             addFlags(
                 FLAG_ACTIVITY_LAUNCH_ADJACENT or FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_CLEAR_TASK
             )
@@ -250,7 +257,7 @@ class AppChooserActivity : ComponentActivity() {
 fun createAppPairBitmap(
     firstApp: AppInfo, secondApp: AppInfo, bigWidth: Int, bigHeight: Int, layout: AppPairIconLayout
 ): Bitmap {
-    return Bitmap.createBitmap(bigWidth, bigHeight, Bitmap.Config.ARGB_8888).also { bitmap ->
+    return createBitmap(bigWidth, bigHeight).also { bitmap ->
         val bitmapPaint = Paint().also { paint ->
             paint.isAntiAlias = true
             paint.isFilterBitmap = true
@@ -269,17 +276,17 @@ fun createAppPairBitmap(
                 drawPaint(Paint().also {
                     it.color = Color.TRANSPARENT
                 })
-                save()
-                density = firstBitmap.density
-                drawBitmap(firstBitmap, 0F, topFirstBitmap, bitmapPaint)
-                restore()
+                withSave {
+                    density = firstBitmap.density
+                    drawBitmap(firstBitmap, 0F, topFirstBitmap, bitmapPaint)
+                }
                 density = secondBitmap.density
                 drawBitmap(
                     secondBitmap, smallWidth.toFloat(), topSecondBitmap, bitmapPaint
                 )
             } else {
                 layout.bitmap?.let { bitmap ->
-                    val scaled = Bitmap.createScaledBitmap(bitmap, bigWidth, bigHeight, true)
+                    val scaled = bitmap.scale(bigWidth, bigHeight)
                     drawBitmap(scaled, 0F, 0F, bitmapPaint)
                     scaled.recycle()
                 }

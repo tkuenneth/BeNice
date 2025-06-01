@@ -8,10 +8,10 @@ import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.Intent.FLAG_ACTIVITY_TASK_ON_HOME
-import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import androidx.activity.ComponentActivity
+import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 
@@ -85,13 +85,13 @@ fun Activity.launchApp(
         when (packageName) {
             MIME_TYPE_URL -> {
                 action = Intent.ACTION_VIEW
-                data = Uri.parse(className)
+                data = className.toUri()
             }
 
             MIME_TYPE_IMAGE -> {
                 component = ComponentName(this@launchApp, ImageViewerActivity::class.java)
                 action = Intent.ACTION_VIEW
-                setDataAndType(Uri.parse(className), MIME_TYPE_IMAGE)
+                setDataAndType(className.toUri(), MIME_TYPE_IMAGE)
             }
 
             else -> {

@@ -1,6 +1,5 @@
 package de.thomaskuenneth.benice
 
-import android.graphics.drawable.BitmapDrawable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -33,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.graphics.drawable.toDrawable
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -92,7 +92,7 @@ fun AppChooser(
                                     packageName = MIME_TYPE_IMAGE,
                                     className = uri.toString(),
                                     label = context.getString(R.string.image),
-                                    icon = BitmapDrawable(context.resources, bitmap)
+                                    icon = bitmap.toDrawable(context.resources)
                                 ), true
                             )
                         }

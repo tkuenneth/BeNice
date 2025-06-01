@@ -4,9 +4,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
-import android.net.Uri
 import android.util.Patterns
 import androidx.core.content.pm.PackageInfoCompat
+import androidx.core.net.toUri
 
 
 data class AppInfo(
@@ -47,4 +47,4 @@ fun String.isValidUrl(): Boolean {
 fun sameApp(app1: AppInfo?, app2: AppInfo?): Boolean =
     (app1?.packageName ?: "") == (app2?.packageName ?: "")
 
-fun String.createLabelFromURL(defaultStr: String): String = Uri.parse(this).host ?: defaultStr
+fun String.createLabelFromURL(defaultStr: String): String = this.toUri().host ?: defaultStr

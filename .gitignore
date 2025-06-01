@@ -17,3 +17,4 @@ local.properties
 Browse.plb
 *.lock
 /docs/_site
+.idea/detekt.xml

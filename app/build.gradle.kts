@@ -11,9 +11,9 @@ android {
     defaultConfig {
         applicationId = "de.thomaskuenneth.benice"
         minSdk = 28
-        targetSdk = 35
-        versionCode = 54
-        versionName = "1.3.3"
+        targetSdk = 36
+        versionCode = 55
+        versionName = "1.3.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -51,26 +51,26 @@ android {
 }
 
 dependencies {
-    implementation(platform("androidx.compose:compose-bom:2025.04.00"))
+    implementation(platform("androidx.compose:compose-bom:2025.05.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
 
-    androidTestImplementation(platform("androidx.compose:compose-bom:2025.04.00"))
+    androidTestImplementation(platform("androidx.compose:compose-bom:2025.05.01"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest:")
 
     implementation("androidx.core:core-ktx:1.16.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.0")
     implementation("androidx.activity:activity-compose:1.10.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.preference:preference-ktx:1.2.1")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.9.0")
 
-    implementation("androidx.window:window-core:1.3.0")
-    implementation("androidx.window:window:1.3.0")
+    implementation("androidx.window:window-core:1.4.0")
+    implementation("androidx.window:window:1.4.0")
 
     implementation("io.coil-kt:coil-compose:2.7.0")
 
