@@ -18,6 +18,7 @@ import android.graphics.ImageDecoder
 import android.graphics.Paint
 import android.graphics.drawable.Icon
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -74,20 +75,27 @@ class AppChooserActivity : ComponentActivity() {
     private val launcher: ActivityResultLauncher<PickVisualMediaRequest> =
         registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
             viewModel.setUri(uri)
-            viewModel.setBitmap(if (uri == null) {
+            viewModel.setBitmap(
+                if (uri == null) {
                 null
             } else {
-                contentResolver.takePersistableUriPermission(
-                    uri, FLAG_GRANT_READ_URI_PERMISSION
-                )
-                val source = ImageDecoder.createSource(
-                    contentResolver, uri
-                )
-                ImageDecoder.decodeBitmap(
-                    source
-                ) { decoder, _, _ ->
-                    decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-                    decoder.isMutableRequired = true
+                try {
+                    contentResolver.takePersistableUriPermission(
+                        uri, FLAG_GRANT_READ_URI_PERMISSION
+                    )
+                    val source = ImageDecoder.createSource(
+                        contentResolver, uri
+                    )
+                    ImageDecoder.decodeBitmap(
+                        source
+                    ) { decoder, _, _ ->
+                        decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+                        decoder.isMutableRequired = true
+                    }
+                } catch (_: SecurityException) {
+                    Toast.makeText(this, R.string.could_not_obtain_picture, Toast.LENGTH_LONG)
+                        .show()
+                    null
                 }
             })
         }
@@ -130,7 +138,8 @@ class AppChooserActivity : ComponentActivity() {
                 var settingsOpen by remember { mutableStateOf(false) }
                 Scaffold(
                     topBar = {
-                        TopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) },
+                        TopAppBar(
+                            title = { Text(text = stringResource(id = R.string.app_name)) },
                             scrollBehavior = scrollBehavior,
                             actions = {
                                 IconButtonWithTooltip(
@@ -159,7 +168,8 @@ class AppChooserActivity : ComponentActivity() {
                             .padding(paddingValues = paddingValues)
                             .background(color = MaterialTheme.colorScheme.background)
                     )
-                    SettingsScreen(removeDynamicShortcutsEnabled = shortcutManager.dynamicShortcuts.isNotEmpty(),
+                    SettingsScreen(
+                        removeDynamicShortcutsEnabled = shortcutManager.dynamicShortcuts.isNotEmpty(),
                         isOpen = settingsOpen,
                         viewModel = viewModel,
                         sheetClosed = {
