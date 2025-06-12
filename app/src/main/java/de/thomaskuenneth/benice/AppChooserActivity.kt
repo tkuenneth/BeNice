@@ -27,9 +27,9 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
@@ -149,8 +149,7 @@ class AppChooserActivity : ComponentActivity() {
                                 )
                             })
                     },
-                    // currently necessary to achieve edge to edge at the bottom
-                    bottomBar = { Spacer(modifier = Modifier.height(0.dp)) },
+                    contentWindowInsets = WindowInsets(0.dp, 0.dp, 0.dp, 0.dp),
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
                 ) { paddingValues ->
                     BeNiceScreen(
@@ -167,6 +166,7 @@ class AppChooserActivity : ComponentActivity() {
                             .fillMaxSize()
                             .padding(paddingValues = paddingValues)
                             .background(color = MaterialTheme.colorScheme.background)
+                            .consumeWindowInsets(paddingValues)
                     )
                     SettingsScreen(
                         removeDynamicShortcutsEnabled = shortcutManager.dynamicShortcuts.isNotEmpty(),

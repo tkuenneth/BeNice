@@ -42,7 +42,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
-import androidx.window.core.layout.WindowWidthSizeClass
 import kotlinx.coroutines.launch
 
 private const val launchDelayMin = 500F
@@ -86,11 +85,19 @@ fun BeNiceScreen(
     ) {
         if (!state.isLoading) {
             AppChooser(
-                installedApps = state.installedApps,
-                columns = when (windowSizeClass.windowWidthSizeClass) {
-                    WindowWidthSizeClass.MEDIUM -> if (state.threeColumnsOnMediumScreens) 3 else 2
-                    WindowWidthSizeClass.EXPANDED -> if (state.twoColumnsOnLargeScreens) 2 else 3
-                    WindowWidthSizeClass.COMPACT -> if (state.twoColumnsOnSmallScreens) 2 else 1
+                installedApps = state.installedApps, columns = when (windowSizeClass.minWidthDp) {
+                    in (WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND..<WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) -> {
+                        if (state.threeColumnsOnMediumScreens) 3 else 2
+                    }
+
+                    in (WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND..Int.MAX_VALUE) -> {
+                        if (state.twoColumnsOnLargeScreens) 2 else 3
+                    }
+
+                    in (0..<WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) -> {
+                        if (state.twoColumnsOnSmallScreens) 2 else 1
+                    }
+
                     else -> 1
                 },
                 letterPosition = state.letterPosition,
@@ -121,7 +128,8 @@ fun BeNiceScreen(
         }
     }
     contextMenuAppInfo?.let { appInfo ->
-        ContextModalBottomSheet(contextMenuAppInfo = appInfo,
+        ContextModalBottomSheet(
+            contextMenuAppInfo = appInfo,
             sheetState = sheetState,
             closeSheet = { callback -> closeSheet(callback) },
             onLaunchClicked = onClick,
@@ -189,7 +197,8 @@ fun AppPairDialog(
         layout = AppPairIconLayout.CustomImage(customImage)
     }
     AlertDialog(onDismissRequest = onDismissRequest, confirmButton = {
-        Button(enabled = label.isNotBlank() && !label.isTooLong() && bothAppsChosen && !sameApp,
+        Button(
+            enabled = label.isNotBlank() && !label.isTooLong() && bothAppsChosen && !sameApp,
             onClick = {
                 onFinished(
                     firstApp!!, secondApp!!, delay.toLong(), label, addDynamicShortcut, layout
@@ -269,7 +278,8 @@ fun AppPairDialog(
                     )
                 }
                 if (firstApp != null && secondApp != null) {
-                    BeNiceTextField(value = label,
+                    BeNiceTextField(
+                        value = label,
                         resId = R.string.app_pair_label,
                         message = if (label.isBlank()) {
                             stringResource(id = R.string.label_cannot_be_blank)
@@ -305,7 +315,8 @@ fun AppPairDialog(
                             ) {
                                 layout = AppPairIconLayout.Diagonal
                             }
-                            SelectableImage(firstApp = firstApp,
+                            SelectableImage(
+                                firstApp = firstApp,
                                 secondApp = secondApp,
                                 layout = AppPairIconLayout.CustomImage(customImage),
                                 selected = layout is AppPairIconLayout.CustomImage,
@@ -334,7 +345,8 @@ fun AppPairDialog(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(text = stringResource(id = R.string.add_dynamic_shortcut))
-                        Checkbox(checked = addDynamicShortcut,
+                        Checkbox(
+                            checked = addDynamicShortcut,
                             onCheckedChange = { addDynamicShortcut = it })
                     }
                 }
