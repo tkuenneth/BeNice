@@ -1,5 +1,6 @@
 package de.thomaskuenneth.benice
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -11,14 +12,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonGroup
+import androidx.compose.material3.ButtonGroupDefaults
+import androidx.compose.material3.ButtonGroupMenuState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -27,10 +34,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SettingsScreen(
     removeDynamicShortcutsEnabled: Boolean,
@@ -74,17 +84,50 @@ fun SettingsScreen(
                         .padding(bottom = 8.dp)
                         .align(Alignment.CenterHorizontally)
                 )
-                SingleChoiceSegmentedButtonRow(modifier = Modifier.align(alignment = Alignment.CenterHorizontally)) {
-                    options.forEachIndexed { index, label ->
-                        SegmentedButton(
-                            shape = SegmentedButtonDefaults.itemShape(
-                                index = index, count = options.size
-                            ), onClick = {
-                                viewModel.setLetterPosition(index)
-                            }, selected = index == state.letterPosition
-                        ) {
-                            Text(label)
+                val overflowMenuButton: @Composable (ButtonGroupMenuState) -> Unit = { menuState ->
+                    FilledIconButton(
+                        onClick = {
+                            if (menuState.isExpanded) {
+                                menuState.dismiss()
+                            } else {
+                                menuState.show()
+                            }
                         }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.MoreVert,
+                            contentDescription = null
+                        )
+                    }
+                }
+                ButtonGroup(
+                    overflowIndicator = overflowMenuButton,
+                    modifier = Modifier.align(alignment = Alignment.CenterHorizontally),
+                    horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
+                ) {
+                    options.forEachIndexed { index, label ->
+//                        toggleableItem(
+//                            onCheckedChange = {
+//                                viewModel.setLetterPosition(index)
+//                            },
+//                            checked = index == state.letterPosition,
+//                            label = label
+//                        )
+                        customItem(buttonGroupContent = {
+                            ToggleButton(
+                                checked = index == state.letterPosition,
+                                onCheckedChange = { viewModel.setLetterPosition(index) },
+                                modifier = Modifier.semantics { role = Role.RadioButton },
+                                shapes =
+                                    when (index) {
+                                        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                                        options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                        else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                                    }
+                            ) {
+                                Text(label)
+                            }
+                        }, menuContent = overflowMenuButton)
                     }
                 }
                 Column(
@@ -109,7 +152,8 @@ fun SettingsScreen(
                         text = stringResource(R.string.two_columns_on_large_screens)
                     )
                 }
-                Button(enabled = removeDynamicShortcutsEnabled,
+                Button(
+                    enabled = removeDynamicShortcutsEnabled,
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(top = 16.dp),
