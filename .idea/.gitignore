@@ -12,3 +12,5 @@ runConfigurations.xml
 emulatorDisplays.xml
 kotlinc.xml
 AndroidProjectSystem.xml
+deviceManager.xml
+appInsightsSettings.xml
