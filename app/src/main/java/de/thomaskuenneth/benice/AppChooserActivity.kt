@@ -170,6 +170,7 @@ class AppChooserActivity : ComponentActivity() {
                             .background(color = MaterialTheme.colorScheme.background)
                             .consumeWindowInsets(paddingValues)
                     )
+                    // Consider passing shortcutManager.maxShortcutCountPerActivity
                     SettingsScreen(
                         removeDynamicShortcutsEnabled = shortcutManager.dynamicShortcuts.isNotEmpty(),
                         isOpen = settingsOpen,
@@ -248,7 +249,6 @@ class AppChooserActivity : ComponentActivity() {
             ).setShortLabel(label).setIntent(createLaunchAppPairIntent(firstApp, secondApp, delay))
                 .build()
             shortcutManager.requestPinShortcut(shortcutInfo, null)
-            // shortcutManager.maxShortcutCountPerActivity
             if (addDynamicShortcut) {
                 try {
                     shortcutManager.addDynamicShortcuts(listOf(shortcutInfo))
