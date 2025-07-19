@@ -77,27 +77,27 @@ class AppChooserActivity : ComponentActivity() {
             viewModel.setUri(uri)
             viewModel.setBitmap(
                 if (uri == null) {
-                null
-            } else {
-                try {
-                    contentResolver.takePersistableUriPermission(
-                        uri, FLAG_GRANT_READ_URI_PERMISSION
-                    )
-                    val source = ImageDecoder.createSource(
-                        contentResolver, uri
-                    )
-                    ImageDecoder.decodeBitmap(
-                        source
-                    ) { decoder, _, _ ->
-                        decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
-                        decoder.isMutableRequired = true
-                    }
-                } catch (_: SecurityException) {
-                    Toast.makeText(this, R.string.could_not_obtain_picture, Toast.LENGTH_LONG)
-                        .show()
                     null
-                }
-            })
+                } else {
+                    try {
+                        contentResolver.takePersistableUriPermission(
+                            uri, FLAG_GRANT_READ_URI_PERMISSION
+                        )
+                        val source = ImageDecoder.createSource(
+                            contentResolver, uri
+                        )
+                        ImageDecoder.decodeBitmap(
+                            source
+                        ) { decoder, _, _ ->
+                            decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
+                            decoder.isMutableRequired = true
+                        }
+                    } catch (_: SecurityException) {
+                        Toast.makeText(this, R.string.could_not_obtain_picture, Toast.LENGTH_LONG)
+                            .show()
+                        null
+                    }
+                })
         }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -153,7 +153,9 @@ class AppChooserActivity : ComponentActivity() {
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
                 ) { paddingValues ->
                     BeNiceScreen(
-                        canAddDynamicShortcut = shortcutManager.maxShortcutCountPerActivity > shortcutManager.dynamicShortcuts.size,
+                        canAddDynamicShortcut = shortcutManager.maxShortcutCountPerActivity >
+                                shortcutManager.dynamicShortcuts.size +
+                                shortcutManager.manifestShortcuts.size,
                         windowSizeClass = windowSizeClass,
                         state = state,
                         onClick = ::onClick,
@@ -246,9 +248,14 @@ class AppChooserActivity : ComponentActivity() {
             ).setShortLabel(label).setIntent(createLaunchAppPairIntent(firstApp, secondApp, delay))
                 .build()
             shortcutManager.requestPinShortcut(shortcutInfo, null)
-            shortcutManager.maxShortcutCountPerActivity
+            // shortcutManager.maxShortcutCountPerActivity
             if (addDynamicShortcut) {
-                shortcutManager.addDynamicShortcuts(listOf(shortcutInfo))
+                try {
+                    shortcutManager.addDynamicShortcuts(listOf(shortcutInfo))
+                } catch (_: IllegalArgumentException) {
+                    Toast.makeText(this, R.string.something_went_wrong, Toast.LENGTH_LONG)
+                        .show()
+                }
             }
         }
     }
