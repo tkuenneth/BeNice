@@ -34,6 +34,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -63,6 +65,8 @@ private const val KEY_LETTER_POSITION = "letterPosition"
 private const val KEY_TWO_COLUMNS_ON_SMALL_SCREENS = "twoColumnsOnSmallScreens"
 private const val KEY_THREE_COLUMNS_ON_MEDIUM_SCREENS = "threeColumnsOnMediumScreens"
 private const val KEY_TWO_COLUMNS_ON_LARGE_SCREENS = "twoColumnsOnLargeScreens"
+
+private const val KEY_SHORTCUT_INFO_DISMISSED = "shortcutInfoDismissed"
 
 class AppChooserActivity : ComponentActivity() {
 
@@ -100,7 +104,7 @@ class AppChooserActivity : ComponentActivity() {
                 })
         }
 
-    @OptIn(ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewModel = ViewModelProvider(this)[ShowImageMenuItemViewModel::class.java]
@@ -130,12 +134,20 @@ class AppChooserActivity : ComponentActivity() {
         windowSizeClass = computeWindowSizeClass()
         clipboardManager = getSystemService(ClipboardManager::class.java)
         setContent {
-            MaterialTheme(
+            MaterialExpressiveTheme(
                 colorScheme = defaultColorScheme()
             ) {
                 val state by viewModel.uiState.collectAsState()
                 val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
                 var settingsOpen by remember { mutableStateOf(false) }
+                var shortcutInfoDismissed by remember {
+                    mutableStateOf(
+                        prefs.getBoolean(
+                            KEY_SHORTCUT_INFO_DISMISSED,
+                            false
+                        )
+                    )
+                }
                 Scaffold(
                     topBar = {
                         TopAppBar(
@@ -170,7 +182,17 @@ class AppChooserActivity : ComponentActivity() {
                             .padding(paddingValues = paddingValues)
                             .background(color = MaterialTheme.colorScheme.background)
                             .consumeWindowInsets(paddingValues)
-                    )
+                    ) {
+                        ShortcutInfoScreen(
+                            visible = !shortcutInfoDismissed,
+                            onDismiss = {
+                                shortcutInfoDismissed = true
+                                prefs.edit {
+                                    putBoolean(KEY_SHORTCUT_INFO_DISMISSED, true)
+                                }
+                            }
+                        )
+                    }
                     // Consider passing shortcutManager.maxShortcutCountPerActivity
                     SettingsScreen(
                         removeDynamicShortcutsEnabled = shortcutManager.dynamicShortcuts.isNotEmpty(),

@@ -56,4 +56,16 @@
 
     <string name="cannot_create_pinned_shortcuts">Looks like your launcher app doesn\'t support pinned shortcuts</string>
 
+    <string name="did_you_know">Did you know?</string>
+
+    <string name="shortcut_info_01">\u0020can create app pairs for you. This is done using\u0020</string>
+    <string name="shortcut_info_02">shortcuts</string>
+    <string name="shortcut_info_03">.\u0020There are two types of shortcuts:</string>
+    <string name="shortcut_info_04">Pinned shortcuts</string>
+    <string name="shortcut_info_05">\u0020are placed on your home screen. Unfortunately, some launchers don\'t support them.</string>
+    <string name="shortcut_info_06">Dynamic shortcuts</string>
+    <string name="shortcut_info_07">\u0020are available upon long pressing on the\u0020</string>
+    <string name="shortcut_info_08">\u0020app icon. And they can be picked up dynamically by apps supporting this feature.</string>
+    <string name="got_it">Got it</string>
+
 </resources>
