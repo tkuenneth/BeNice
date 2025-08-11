@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -226,6 +225,29 @@ class AppChooserActivity : ComponentActivity() {
         }
     }
 
+    private fun createShortcutInfo(
+        firstApp: AppInfo,
+        secondApp: AppInfo,
+        delay: Long,
+        label: String,
+        layout: AppPairIconLayout,
+        suffix: String
+    ): ShortcutInfo {
+        val id = "${firstApp.className}|${secondApp.className}|$suffix"
+        return ShortcutInfo.Builder(this, id).setIcon(
+            Icon.createWithBitmap(
+                createAppPairBitmap(
+                    firstApp = firstApp,
+                    secondApp = secondApp,
+                    bigWidth = shortcutManager.iconMaxWidth,
+                    bigHeight = shortcutManager.iconMaxHeight,
+                    layout = layout
+                )
+            )
+        ).setShortLabel(label).setIntent(createLaunchAppPairIntent(firstApp, secondApp, delay))
+            .build()
+    }
+
     private fun onAppsForAppPairSelected(
         firstApp: AppInfo,
         secondApp: AppInfo,
@@ -235,27 +257,30 @@ class AppChooserActivity : ComponentActivity() {
         layout: AppPairIconLayout
     ) {
         if (shortcutManager.isRequestPinShortcutSupported) {
-            val id = "${firstApp.className}|${secondApp.className}"
-            val shortcutInfo = ShortcutInfo.Builder(this, id).setIcon(
-                Icon.createWithBitmap(
-                    createAppPairBitmap(
-                        firstApp = firstApp,
-                        secondApp = secondApp,
-                        bigWidth = shortcutManager.iconMaxWidth,
-                        bigHeight = shortcutManager.iconMaxHeight,
-                        layout = layout
-                    )
-                )
-            ).setShortLabel(label).setIntent(createLaunchAppPairIntent(firstApp, secondApp, delay))
-                .build()
+            val shortcutInfo = createShortcutInfo(
+                firstApp = firstApp,
+                secondApp = secondApp,
+                delay = delay,
+                label = label,
+                layout = layout,
+                suffix = "pin"
+            )
             shortcutManager.requestPinShortcut(shortcutInfo, null)
-            if (addDynamicShortcut) {
-                try {
-                    shortcutManager.addDynamicShortcuts(listOf(shortcutInfo))
-                } catch (_: IllegalArgumentException) {
-                    Toast.makeText(this, R.string.something_went_wrong, Toast.LENGTH_LONG)
-                        .show()
-                }
+        }
+        if (addDynamicShortcut) {
+            val shortcutInfo = createShortcutInfo(
+                firstApp = firstApp,
+                secondApp = secondApp,
+                delay = delay,
+                label = label,
+                layout = layout,
+                suffix = "dynamic"
+            )
+            try {
+                shortcutManager.addDynamicShortcuts(listOf(shortcutInfo))
+            } catch (_: IllegalArgumentException) {
+                Toast.makeText(this, R.string.something_went_wrong, Toast.LENGTH_LONG)
+                    .show()
             }
         }
     }

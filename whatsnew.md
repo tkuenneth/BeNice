@@ -1,3 +1,3 @@
 # What's new
 
-- Library and tools upgrades
+- Fixed a bug which causes dynamic shortcuts to not being created in some conditions
