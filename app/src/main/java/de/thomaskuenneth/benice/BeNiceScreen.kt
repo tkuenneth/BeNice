@@ -40,7 +40,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import kotlinx.coroutines.launch
@@ -348,13 +347,7 @@ fun AppPairDialog(
                     }
                 }
                 if (!canAddPinnedShortcut) {
-                    Text(
-                        text = stringResource(R.string.cannot_create_pinned_shortcuts),
-                        modifier = Modifier.fillMaxWidth(),
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.error
-                    )
+                    ErrorText(text = stringResource(R.string.cannot_create_pinned_shortcuts))
                 }
                 if (canAddDynamicShortcut) {
                     Row(
@@ -368,6 +361,8 @@ fun AppPairDialog(
                             checked = addDynamicShortcut,
                             onCheckedChange = { addDynamicShortcut = it })
                     }
+                } else {
+                    ErrorText(text = stringResource(R.string.cannot_create_dynamic_shortcuts))
                 }
             }
             AnimatedUpOrDownButton(

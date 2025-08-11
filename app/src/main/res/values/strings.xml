@@ -55,6 +55,7 @@
     <string name="could_not_obtain_picture">Could not obtain picture</string>
 
     <string name="cannot_create_pinned_shortcuts">Looks like your launcher app doesn\'t support pinned shortcuts</string>
+    <string name="cannot_create_dynamic_shortcuts">Looks like you reached the limit of dynamic shortcuts</string>
 
     <string name="did_you_know">Did you know?</string>
 
