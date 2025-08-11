@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -152,6 +153,7 @@ class AppChooserActivity : ComponentActivity() {
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
                 ) { paddingValues ->
                     BeNiceScreen(
+                        canAddPinnedShortcut = shortcutManager.isRequestPinShortcutSupported,
                         canAddDynamicShortcut = shortcutManager.maxShortcutCountPerActivity >
                                 shortcutManager.dynamicShortcuts.size +
                                 shortcutManager.manifestShortcuts.size,

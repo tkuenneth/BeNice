@@ -40,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import kotlinx.coroutines.launch
@@ -50,6 +51,7 @@ private const val launchDelayMax = 5000F
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BeNiceScreen(
+    canAddPinnedShortcut: Boolean,
     canAddDynamicShortcut: Boolean,
     windowSizeClass: WindowSizeClass,
     state: BeNiceScreenUiState,
@@ -144,6 +146,7 @@ fun BeNiceScreen(
     }
     if (showAppPairDialog) {
         AppPairDialog(
+            canAddPinnedShortcut = canAddPinnedShortcut,
             canAddDynamicShortcut = canAddDynamicShortcut,
             state = state,
             firstApp = firstApp,
@@ -162,6 +165,7 @@ fun BeNiceScreen(
 
 @Composable
 fun AppPairDialog(
+    canAddPinnedShortcut: Boolean,
     canAddDynamicShortcut: Boolean,
     state: BeNiceScreenUiState,
     firstApp: AppInfo?,
@@ -198,7 +202,11 @@ fun AppPairDialog(
     }
     AlertDialog(onDismissRequest = onDismissRequest, confirmButton = {
         Button(
-            enabled = label.isNotBlank() && !label.isTooLong() && bothAppsChosen && !sameApp,
+            enabled = label.isNotBlank() &&
+                    !label.isTooLong() &&
+                    bothAppsChosen &&
+                    !sameApp &&
+                    (addDynamicShortcut || canAddPinnedShortcut),
             onClick = {
                 onFinished(
                     firstApp!!, secondApp!!, delay.toLong(), label, addDynamicShortcut, layout
@@ -336,6 +344,15 @@ fun AppPairDialog(
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
+                }
+                if (!canAddPinnedShortcut) {
+                    Text(
+                        text = stringResource(R.string.cannot_create_pinned_shortcuts),
+                        modifier = Modifier.fillMaxWidth(),
+                        style = MaterialTheme.typography.bodyLarge,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
                 if (canAddDynamicShortcut) {
                     Row(
