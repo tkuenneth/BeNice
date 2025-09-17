@@ -61,7 +61,6 @@ fun BeNiceScreen(
     onAppsForAppPairSelected: (AppInfo, AppInfo, Long, String, Boolean, AppPairIconLayout) -> Unit,
     selectBitmap: () -> Unit,
     modifier: Modifier,
-    overlay: @Composable () -> Unit
 ) {
     var contextMenuAppInfo by remember { mutableStateOf<AppInfo?>(null) }
     val sheetState = rememberModalBottomSheetState()
@@ -111,7 +110,6 @@ fun BeNiceScreen(
                 },
                 selectBitmap = selectBitmap
             )
-            overlay()
             FloatingActionButton(
                 onClick = {
                     showAppPairDialog = true

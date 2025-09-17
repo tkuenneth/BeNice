@@ -182,17 +182,7 @@ class AppChooserActivity : ComponentActivity() {
                             .padding(paddingValues = paddingValues)
                             .background(color = MaterialTheme.colorScheme.background)
                             .consumeWindowInsets(paddingValues)
-                    ) {
-                        ShortcutInfoScreen(
-                            visible = !shortcutInfoDismissed,
-                            onDismiss = {
-                                shortcutInfoDismissed = true
-                                prefs.edit {
-                                    putBoolean(KEY_SHORTCUT_INFO_DISMISSED, true)
-                                }
-                            }
-                        )
-                    }
+                    )
                     // Consider passing shortcutManager.maxShortcutCountPerActivity
                     SettingsScreen(
                         removeDynamicShortcutsEnabled = shortcutManager.dynamicShortcuts.isNotEmpty(),
@@ -217,6 +207,15 @@ class AppChooserActivity : ComponentActivity() {
                             shortcutManager.removeDynamicShortcuts(shortcutManager.dynamicShortcuts.map { it.id })
                         })
                 }
+                ShortcutInfoScreen(
+                    visible = !shortcutInfoDismissed,
+                    onDismiss = {
+                        shortcutInfoDismissed = true
+                        prefs.edit {
+                            putBoolean(KEY_SHORTCUT_INFO_DISMISSED, true)
+                        }
+                    }
+                )
             }
         }
         viewModel.queryInstalledApps(packageManager)
