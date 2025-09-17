@@ -2,6 +2,7 @@ package de.thomaskuenneth.benice
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -17,7 +18,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -32,12 +35,22 @@ fun ShortcutInfoScreen(
     visible: Boolean,
     onDismiss: () -> Unit,
 ) {
+    val backgroundColor = MaterialTheme.colorScheme.tertiaryContainer
+    val interactionSource = remember { MutableInteractionSource() }
+    val indication = remember {
+        ripple(
+            color = backgroundColor
+        )
+    }
     if (visible) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .clickable {}
-                .background(color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5F))
+                .clickable(
+                    interactionSource = interactionSource,
+                    indication = indication
+                ) {}
+                .background(color = MaterialTheme.colorScheme.surface.copy(alpha = 0.4F))
                 .statusBarsPadding(),
             contentAlignment = Alignment.BottomStart
         ) {
@@ -45,7 +58,7 @@ fun ShortcutInfoScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        color = MaterialTheme.colorScheme.tertiaryContainer,
+                        color = backgroundColor,
                         shape = MaterialTheme.shapes.medium
                     )
                     .verticalScroll(rememberScrollState())
