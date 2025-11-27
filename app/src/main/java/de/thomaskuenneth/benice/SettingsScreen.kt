@@ -87,7 +87,7 @@ fun SettingsScreen(
                 val overflowMenuButton: @Composable (ButtonGroupMenuState) -> Unit = { menuState ->
                     FilledIconButton(
                         onClick = {
-                            if (menuState.isExpanded) {
+                            if (menuState.isShowing) {
                                 menuState.dismiss()
                             } else {
                                 menuState.show()
