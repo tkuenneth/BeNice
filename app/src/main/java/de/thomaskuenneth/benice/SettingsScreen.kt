@@ -17,7 +17,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.ButtonGroupDefaults
-import androidx.compose.material3.ButtonGroupMenuState
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FilledIconButton
@@ -84,50 +84,53 @@ fun SettingsScreen(
                         .padding(bottom = 8.dp)
                         .align(Alignment.CenterHorizontally)
                 )
-                val overflowMenuButton: @Composable (ButtonGroupMenuState) -> Unit = { menuState ->
-                    FilledIconButton(
-                        onClick = {
-                            if (menuState.isShowing) {
-                                menuState.dismiss()
-                            } else {
-                                menuState.show()
-                            }
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.MoreVert,
-                            contentDescription = null
-                        )
-                    }
-                }
                 ButtonGroup(
-                    overflowIndicator = overflowMenuButton,
                     modifier = Modifier.align(alignment = Alignment.CenterHorizontally),
-                    horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)
+                    horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
+                    overflowIndicator = { menuState ->
+                        FilledIconButton(
+                            onClick = {
+                                if (menuState.isShowing) {
+                                    menuState.dismiss()
+                                } else {
+                                    menuState.show()
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.MoreVert,
+                                contentDescription = stringResource(R.string.more_vert)
+                            )
+                        }
+                    }
                 ) {
                     options.forEachIndexed { index, label ->
-//                        toggleableItem(
-//                            onCheckedChange = {
-//                                viewModel.setLetterPosition(index)
-//                            },
-//                            checked = index == state.letterPosition,
-//                            label = label
-//                        )
-                        customItem(buttonGroupContent = {
-                            ToggleButton(
-                                checked = index == state.letterPosition,
-                                onCheckedChange = { viewModel.setLetterPosition(index) },
-                                modifier = Modifier.semantics { role = Role.RadioButton },
-                                shapes =
-                                    when (index) {
-                                        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                                        options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                                        else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                        customItem(
+                            buttonGroupContent = {
+                                ToggleButton(
+                                    checked = index == state.letterPosition,
+                                    onCheckedChange = { viewModel.setLetterPosition(index) },
+                                    modifier = Modifier.semantics { role = Role.RadioButton },
+                                    shapes =
+                                        when (index) {
+                                            0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                                            options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                            else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                                        }
+                                ) {
+                                    Text(label)
+                                }
+                            },
+                            menuContent = { menuState ->
+                                DropdownMenuItem(
+                                    text = { Text(label) },
+                                    onClick = {
+                                        viewModel.setLetterPosition(index)
+                                        menuState.dismiss()
                                     }
-                            ) {
-                                Text(label)
+                                )
                             }
-                        }, menuContent = overflowMenuButton)
+                        )
                     }
                 }
                 Column(
