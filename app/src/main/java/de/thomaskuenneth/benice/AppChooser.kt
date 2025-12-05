@@ -1,7 +1,10 @@
 package de.thomaskuenneth.benice
 
+import android.content.pm.ShortcutInfo
+import android.graphics.drawable.Drawable
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -42,20 +47,27 @@ fun AppChooser(
     columns: Int,
     letterPosition: Int,
     showSpecials: Boolean,
-    shouldAddEmptySpace: Boolean = false,
+    dynamicShortcuts: List<ShortcutInfo>,
+    createShortcutIcon: (ShortcutInfo) -> Drawable,
+    onShortcutClicked: (ShortcutInfo) -> Unit,
     onClick: (AppInfo, Boolean) -> Unit,
     onLongClick: (AppInfo) -> Unit,
-    selectBitmap: () -> Unit
+    selectBitmap: () -> Unit,
+    shouldAddEmptySpace: Boolean = false
 ) {
     val iconColor = MaterialTheme.colorScheme.primary.toArgb()
     val context = LocalContext.current
+    val resources = LocalResources.current
+    val strOpenUrl = stringResource(R.string.open_url)
+    val imageLabel = stringResource(R.string.image)
     val onDoneUrl: (String) -> Unit = { url ->
         onClick(
-            AppInfo(packageName = MIME_TYPE_URL,
+            AppInfo(
+                packageName = MIME_TYPE_URL,
                 className = url,
-                label = url.createLabelFromURL(context.getString(R.string.open_url)),
+                label = url.createLabelFromURL(strOpenUrl),
                 icon = ResourcesCompat.getDrawable(
-                    context.resources, R.drawable.baseline_open_in_browser_24, context.theme
+                    resources, R.drawable.baseline_open_in_browser_24, context.theme
                 )!!.also {
                     it.setTint(iconColor)
                 }), true
@@ -65,7 +77,7 @@ fun AppChooser(
     val displayCutoutPadding = WindowInsets.displayCutout.asPaddingValues()
     val left = displayCutoutPadding.calculateLeftPadding(LocalLayoutDirection.current)
     val right = displayCutoutPadding.calculateRightPadding(LocalLayoutDirection.current)
-    if (installedApps.isEmpty()) {
+    if (installedApps.isEmpty() && dynamicShortcuts.isEmpty()) {
         Text(
             text = stringResource(R.string.no_apps),
             style = MaterialTheme.typography.displaySmall,
@@ -78,8 +90,21 @@ fun AppChooser(
         LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(), columns = GridCells.Fixed(count = columns)
         ) {
-            var last = ""
-            var counter = 0
+            items(dynamicShortcuts, key = { it.id }) { shortcut ->
+                ShortcutLauncher(
+                    icon = createShortcutIcon(shortcut),
+                    label = shortcut.shortLabel.toString(),
+                    modifier = Modifier
+                        .padding(
+                            start = maxOf(left, 16.dp),
+                            end = maxOf(right, 16.dp),
+                            top = 8.dp,
+                            bottom = 8.dp
+                        )
+                        .clip(shape = MaterialTheme.shapes.small)
+                        .clickable { onShortcutClicked(shortcut) }
+                )
+            }
             if (showSpecials) {
                 item {
                     OpenInBrowserMenuItem(onDone = onDoneUrl)
@@ -91,50 +116,60 @@ fun AppChooser(
                                 AppInfo(
                                     packageName = MIME_TYPE_IMAGE,
                                     className = uri.toString(),
-                                    label = context.getString(R.string.image),
-                                    icon = bitmap.toDrawable(context.resources)
+                                    label = imageLabel,
+                                    icon = bitmap.toDrawable(resources)
                                 ), true
                             )
                         }
                     })
                 }
             }
+            val itemsWithHeaders = mutableListOf<Any>()
+            var last = ""
             installedApps.forEach { appInfo ->
-                appInfo.label.ifEmpty { "?" }.substring((0 until 1)).uppercase().let { current ->
-                    if (current != last) {
-                        last = current
-                        header(key = counter++) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(
-                                        start = maxOf(left, 16.dp),
-                                        end = maxOf(right, 16.dp),
-                                        top = 8.dp,
-                                        bottom = 8.dp
-                                    )
-                                    .clip(shape = MaterialTheme.shapes.small)
-                                    .background(color = MaterialTheme.colorScheme.secondaryContainer),
-                                contentAlignment = when (letterPosition) {
-                                    0 -> Alignment.CenterStart
-                                    1 -> Alignment.Center
-                                    else -> Alignment.CenterEnd
-                                }
-                            ) {
-                                Text(
-                                    modifier = Modifier.width(APP_ICON_IMAGE_SIZE),
-                                    text = current,
-                                    style = MaterialTheme.typography.labelLarge,
-                                    textAlign = TextAlign.Center,
-                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
-                            }
-                        }
-                    }
+                val current =
+                    appInfo.label.ifEmpty { "?" }.substring((0 until 1)).uppercase()
+                if (current != last) {
+                    last = current
+                    itemsWithHeaders.add(current)
                 }
-                item(key = counter++) {
+                itemsWithHeaders.add(appInfo)
+            }
+            items(
+                items = itemsWithHeaders,
+                key = { item -> if (item is AppInfo) "${item.packageName}/${item.className}" else item },
+                span = { item ->
+                    GridItemSpan(if (item is String) maxLineSpan else 1)
+                }) { item ->
+                if (item is String) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = maxOf(left, 16.dp),
+                                end = maxOf(right, 16.dp),
+                                top = 8.dp,
+                                bottom = 8.dp
+                            )
+                            .clip(shape = MaterialTheme.shapes.small)
+                            .background(color = MaterialTheme.colorScheme.secondaryContainer),
+                        contentAlignment = when (letterPosition) {
+                            0 -> Alignment.CenterStart
+                            1 -> Alignment.Center
+                            else -> Alignment.CenterEnd
+                        }
+                    ) {
+                        Text(
+                            modifier = Modifier.width(APP_ICON_IMAGE_SIZE),
+                            text = item,
+                            style = MaterialTheme.typography.labelLarge,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+                } else if (item is AppInfo) {
                     AppChooserItem(
-                        appInfo = appInfo, modifier = Modifier
+                        appInfo = item, modifier = Modifier
                             .padding(
                                 start = maxOf(left, 16.dp),
                                 end = maxOf(right, 16.dp),
@@ -143,11 +178,11 @@ fun AppChooser(
                             )
                             .clip(shape = MaterialTheme.shapes.small)
                             .combinedClickable(
-                                onClick = { onClick(appInfo, true) },
-                                onDoubleClick = { onClick(appInfo, false) },
+                                onClick = { onClick(item, true) },
+                                onDoubleClick = { onClick(item, false) },
                                 onLongClick = {
                                     haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    onLongClick(appInfo)
+                                    onLongClick(item)
                                 },
                                 onLongClickLabel = stringResource(id = R.string.open_context_menu)
                             )

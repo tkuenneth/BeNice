@@ -30,7 +30,10 @@ fun AppChooserDialog(
                     columns = 1,
                     letterPosition = letterPosition,
                     showSpecials = true,
-                    onClick = { appInfo, _ -> onClick(appInfo)},
+                    dynamicShortcuts = emptyList(),
+                    createShortcutIcon = { throw NotImplementedError() },
+                    onShortcutClicked = {},
+                    onClick = { appInfo, _ -> onClick(appInfo) },
                     onLongClick = {},
                     selectBitmap = selectImage
                 )

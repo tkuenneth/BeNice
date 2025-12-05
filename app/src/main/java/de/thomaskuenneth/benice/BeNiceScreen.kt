@@ -2,7 +2,9 @@ package de.thomaskuenneth.benice
 
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.ShortcutInfo
 import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -57,19 +59,21 @@ fun BeNiceScreen(
     windowSizeClass: WindowSizeClass,
     state: BeNiceScreenUiState,
     onClick: (AppInfo, Boolean) -> Unit,
+    onShortcutClicked: (ShortcutInfo) -> Unit,
     onAddLinkClicked: (AppInfo) -> Unit,
     onOpenAppInfoClicked: (AppInfo) -> Unit,
     onCopyNamesClicked: (AppInfo) -> Unit,
     onAppsForAppPairSelected: (AppInfo, AppInfo, Long, String, Boolean, AppPairIconLayout) -> Unit,
     selectBitmap: () -> Unit,
     queryInstalledApps: () -> Unit,
+    createShortcutIcon: (ShortcutInfo) -> Drawable,
     modifier: Modifier,
 ) {
     var contextMenuAppInfo by remember { mutableStateOf<AppInfo?>(null) }
     val sheetState = rememberModalBottomSheetState()
     val scope = rememberCoroutineScope()
-    var firstApp: AppInfo? by remember { mutableStateOf(null) }
-    var secondApp: AppInfo? by remember { mutableStateOf(null) }
+    var firstApp: AppInfo? by remember { mutableStateOf<AppInfo?>(null) }
+    var secondApp: AppInfo? by remember { mutableStateOf<AppInfo?>(null) }
     val closeSheet: (() -> Unit) -> Unit = { callback ->
         scope.launch { sheetState.hide() }.invokeOnCompletion {
             callback()
@@ -96,7 +100,11 @@ fun BeNiceScreen(
             CircularProgressIndicator()
         } else {
             AppChooser(
-                installedApps = state.installedApps, columns = when (windowSizeClass.minWidthDp) {
+                dynamicShortcuts = state.dynamicShortcuts,
+                createShortcutIcon = createShortcutIcon,
+                onShortcutClicked = onShortcutClicked,
+                installedApps = state.installedApps,
+                columns = when (windowSizeClass.minWidthDp) {
                     in (WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND..<WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) -> {
                         if (state.threeColumnsOnMediumScreens) 3 else 2
                     }
@@ -120,22 +128,22 @@ fun BeNiceScreen(
                 },
                 selectBitmap = selectBitmap
             )
-            FloatingActionButton(
-                onClick = {
-                    showAppPairDialog = true
-                    firstApp = null
-                    secondApp = null
-                },
-                modifier = Modifier
-                    .align(alignment = Alignment.BottomEnd)
-                    .padding(all = 16.dp)
-                    .navigationBarsPadding()
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(id = R.string.create_app_pair)
-                )
-            }
+        }
+        FloatingActionButton(
+            onClick = {
+                showAppPairDialog = true
+                firstApp = null
+                secondApp = null
+            },
+            modifier = Modifier
+                .align(alignment = Alignment.BottomEnd)
+                .padding(all = 16.dp)
+                .navigationBarsPadding()
+        ) {
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = stringResource(id = R.string.create_app_pair)
+            )
         }
     }
     contextMenuAppInfo?.let { appInfo ->

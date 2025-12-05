@@ -1,6 +1,7 @@
 package de.thomaskuenneth.benice
 
 import android.content.pm.PackageManager
+import android.content.pm.ShortcutInfo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +19,8 @@ data class BeNiceScreenUiState(
     val twoColumnsOnSmallScreens: Boolean = false,
     val threeColumnsOnMediumScreens: Boolean = false,
     val twoColumnsOnLargeScreens: Boolean = false,
-    val appVersionString: String = ""
+    val appVersionString: String = "",
+    val dynamicShortcuts: List<ShortcutInfo> = emptyList()
 )
 
 class BeNiceViewModel : ViewModel() {
@@ -35,6 +37,12 @@ class BeNiceViewModel : ViewModel() {
                 ).sortedBy { it.label.lowercase() })
             }
             setLoading(false)
+        }
+    }
+
+    fun setDynamicShortcuts(shortcuts: List<ShortcutInfo>) {
+        _uiState.update { currentState ->
+            currentState.copy(dynamicShortcuts = shortcuts)
         }
     }
 

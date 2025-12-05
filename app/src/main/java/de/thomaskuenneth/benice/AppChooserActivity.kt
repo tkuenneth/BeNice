@@ -1,8 +1,11 @@
 package de.thomaskuenneth.benice
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
@@ -16,6 +19,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.ImageDecoder
 import android.graphics.Paint
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.Icon
 import android.os.Bundle
 import android.widget.Toast
@@ -54,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.drawable.toBitmap
+import androidx.core.graphics.drawable.toDrawable
 import androidx.core.graphics.scale
 import androidx.core.graphics.withSave
 import androidx.core.net.toUri
@@ -130,6 +135,7 @@ class AppChooserActivity : ComponentActivity() {
                     KEY_TWO_COLUMNS_ON_LARGE_SCREENS, false
                 )
             )
+            updateDynamicShortcuts(this@AppChooserActivity, viewModel)
         }
         clipboardManager = getSystemService(ClipboardManager::class.java)
         setContent {
@@ -174,12 +180,14 @@ class AppChooserActivity : ComponentActivity() {
                         windowSizeClass = windowSizeClass,
                         state = state,
                         onClick = ::onClick,
+                        onShortcutClicked = ::onShortcutClick,
                         onAddLinkClicked = ::onAddLinkClicked,
                         onOpenAppInfoClicked = ::onOpenAppInfoClicked,
                         onAppsForAppPairSelected = ::onAppsForAppPairSelected,
                         onCopyNamesClicked = ::onCopyNamesClicked,
                         selectBitmap = ::selectBitmap,
                         queryInstalledApps = { viewModel.queryInstalledApps(packageManager) },
+                        createShortcutIcon = ::createShortcutIcon,
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(paddingValues = paddingValues)
@@ -228,6 +236,12 @@ class AppChooserActivity : ComponentActivity() {
             launchApp(
                 packageName = packageName, className = className, launchAdjacent = launchAdjacent
             )
+        }
+    }
+
+    private fun onShortcutClick(shortcutInfo: ShortcutInfo) {
+        shortcutInfo.intent?.let { intent ->
+            startActivityCatchExceptions(intent)
         }
     }
 
@@ -319,10 +333,59 @@ class AppChooserActivity : ComponentActivity() {
         val text = "${appInfo.packageName}\n${appInfo.className}"
         clipboardManager.setPrimaryClip(ClipData.newPlainText(text, text))
     }
+
+    @SuppressLint("UseCompatLoadingForDrawables")
+    private fun createShortcutIcon(shortcut: ShortcutInfo): Drawable {
+        val intent = shortcut.intent
+        if (intent != null && intent.action == "de.thomaskuenneth.benice.intent.action.ACTION_LAUNCH_APP_PAIR") {
+            val firstPackageName = intent.getStringExtra("packageNameFirstApp")
+            val firstClassName = intent.getStringExtra("classNameFirstApp")
+            val secondPackageName = intent.getStringExtra("packageNameSecondApp")
+            val secondClassName = intent.getStringExtra("classNameSecondApp")
+            if (firstPackageName != null && firstClassName != null && secondPackageName != null && secondClassName != null) {
+                try {
+                    val pm = packageManager
+                    val firstIcon =
+                        pm.getActivityIcon(ComponentName(firstPackageName, firstClassName))
+                    val secondIcon =
+                        pm.getActivityIcon(ComponentName(secondPackageName, secondClassName))
+                    val bitmap = createAppPairBitmapInternal(
+                        firstIcon,
+                        secondIcon,
+                        shortcutManager.iconMaxWidth,
+                        shortcutManager.iconMaxHeight,
+                        AppPairIconLayout.Horizontal
+                    )
+                    return bitmap.toDrawable(resources)
+                } catch (e: Exception) {
+                    // ignore
+                }
+            }
+        }
+        return getDrawable(R.mipmap.ic_launcher)!!
+    }
+}
+
+@SuppressLint("NewApi")
+fun updateDynamicShortcuts(context: Context, viewModel: BeNiceViewModel) {
+    val shortcutManager = context.getSystemService(ShortcutManager::class.java)
+    shortcutManager?.let {
+        viewModel.setDynamicShortcuts(it.dynamicShortcuts)
+    }
 }
 
 fun createAppPairBitmap(
     firstApp: AppInfo, secondApp: AppInfo, bigWidth: Int, bigHeight: Int, layout: AppPairIconLayout
+): Bitmap {
+    return createAppPairBitmapInternal(firstApp.icon, secondApp.icon, bigWidth, bigHeight, layout)
+}
+
+fun createAppPairBitmapInternal(
+    firstIcon: Drawable,
+    secondIcon: Drawable,
+    bigWidth: Int,
+    bigHeight: Int,
+    layout: AppPairIconLayout
 ): Bitmap {
     return createBitmap(bigWidth, bigHeight).also { bitmap ->
         val bitmapPaint = Paint().also { paint ->
@@ -338,8 +401,8 @@ fun createAppPairBitmap(
                     if (layout == AppPairIconLayout.Diagonal) smallHeight.toFloat() else verticalMargin
                 val topSecondBitmap =
                     if (layout == AppPairIconLayout.Diagonal) 0F else verticalMargin
-                val firstBitmap = firstApp.icon.toBitmap(smallWidth, smallHeight)
-                val secondBitmap = secondApp.icon.toBitmap(smallWidth, smallHeight)
+                val firstBitmap = firstIcon.toBitmap(smallWidth, smallHeight)
+                val secondBitmap = secondIcon.toBitmap(smallWidth, smallHeight)
                 drawPaint(Paint().also {
                     it.color = Color.TRANSPARENT
                 })
