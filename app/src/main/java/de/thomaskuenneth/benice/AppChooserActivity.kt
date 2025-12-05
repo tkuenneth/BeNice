@@ -179,6 +179,7 @@ class AppChooserActivity : ComponentActivity() {
                         onAppsForAppPairSelected = ::onAppsForAppPairSelected,
                         onCopyNamesClicked = ::onCopyNamesClicked,
                         selectBitmap = ::selectBitmap,
+                        queryInstalledApps = { viewModel.queryInstalledApps(packageManager) },
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(paddingValues = paddingValues)
@@ -220,7 +221,6 @@ class AppChooserActivity : ComponentActivity() {
                 )
             }
         }
-        viewModel.queryInstalledApps(packageManager)
     }
 
     private fun onClick(appInfo: AppInfo, launchAdjacent: Boolean) {

@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -29,6 +30,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -60,6 +62,7 @@ fun BeNiceScreen(
     onCopyNamesClicked: (AppInfo) -> Unit,
     onAppsForAppPairSelected: (AppInfo, AppInfo, Long, String, Boolean, AppPairIconLayout) -> Unit,
     selectBitmap: () -> Unit,
+    queryInstalledApps: () -> Unit,
     modifier: Modifier,
 ) {
     var contextMenuAppInfo by remember { mutableStateOf<AppInfo?>(null) }
@@ -81,10 +84,17 @@ fun BeNiceScreen(
         firstApp = null
         secondApp = null
     }
+    LaunchedEffect(Unit) {
+        if (state.installedApps.isEmpty()) {
+            queryInstalledApps()
+        }
+    }
     Box(
         modifier = modifier, contentAlignment = Alignment.Center
     ) {
-        if (!state.isLoading) {
+        if (state.isLoading) {
+            CircularProgressIndicator()
+        } else {
             AppChooser(
                 installedApps = state.installedApps, columns = when (windowSizeClass.minWidthDp) {
                     in (WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND..<WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND) -> {
