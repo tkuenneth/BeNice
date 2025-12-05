@@ -48,6 +48,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
@@ -72,7 +73,6 @@ class AppChooserActivity : ComponentActivity() {
 
     private lateinit var shortcutManager: ShortcutManager
     private lateinit var prefs: SharedPreferences
-    private lateinit var windowSizeClass: WindowSizeClass
     private lateinit var viewModel: ShowImageMenuItemViewModel
     private lateinit var clipboardManager: ClipboardManager
 
@@ -131,12 +131,14 @@ class AppChooserActivity : ComponentActivity() {
                 )
             )
         }
-        windowSizeClass = computeWindowSizeClass()
         clipboardManager = getSystemService(ClipboardManager::class.java)
         setContent {
             MaterialExpressiveTheme(
                 colorScheme = defaultColorScheme()
             ) {
+                val windowSizeClass = remember(LocalConfiguration.current) {
+                    computeWindowSizeClass()
+                }
                 val state by viewModel.uiState.collectAsState()
                 val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
                 var settingsOpen by remember { mutableStateOf(false) }

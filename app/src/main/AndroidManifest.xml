@@ -22,6 +22,7 @@
 
         <activity
             android:name=".AppChooserActivity"
+            android:configChanges="orientation|screenLayout|screenSize|smallestScreenSize"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -32,6 +33,7 @@
 
         <activity
             android:name=".ImageViewerActivity"
+            android:configChanges="orientation|screenLayout|screenSize|smallestScreenSize"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.QUICK_VIEW" />
@@ -40,6 +42,7 @@
 
         <activity
             android:name=".BeNiceActivity"
+            android:configChanges="orientation|screenLayout|screenSize|smallestScreenSize"
             android:excludeFromRecents="true"
             android:exported="true">
             <intent-filter>
