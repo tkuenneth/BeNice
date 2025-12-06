@@ -2,14 +2,6 @@
 layout: home
 ---
 
-<table style="width: 100%; border: none">
-<tr style="background-color: transparent;">
-<td align="center" style="border: none">
-<strong>About</strong>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;<a href="privacy.html">Privacy Policy</a>
-</td>
-</tr>
-</table>
-
 <p><strong>Be nice</strong> is a tiny app launcher. Its sole purpose is to launch apps in split-screen mode. This is more than convenient if an app forces the device into portrait mode. While portrait mode is the preferred orientation on smartphones, tablets and foldables are often used in landscape mode. Instead of rotating your device just to be able to use an app, launch it using <strong>Be nice</strong>.
 </p>
 <p><strong>Be nice</strong> is friendly:</p>
