@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT
@@ -135,7 +134,7 @@ class AppChooserActivity : ComponentActivity() {
                     KEY_TWO_COLUMNS_ON_LARGE_SCREENS, false
                 )
             )
-            updateDynamicShortcuts(this@AppChooserActivity, viewModel)
+            updateDynamicShortcuts()
         }
         clipboardManager = getSystemService(ClipboardManager::class.java)
         setContent {
@@ -151,8 +150,7 @@ class AppChooserActivity : ComponentActivity() {
                 var shortcutInfoDismissed by remember {
                     mutableStateOf(
                         prefs.getBoolean(
-                            KEY_SHORTCUT_INFO_DISMISSED,
-                            false
+                            KEY_SHORTCUT_INFO_DISMISSED, false
                         )
                     )
                 }
@@ -214,17 +212,16 @@ class AppChooserActivity : ComponentActivity() {
                         },
                         removeAllDynamicShortcutsCallback = {
                             shortcutManager.removeDynamicShortcuts(shortcutManager.dynamicShortcuts.map { it.id })
+                            updateDynamicShortcuts()
                         })
                 }
                 ShortcutInfoScreen(
-                    visible = !shortcutInfoDismissed,
-                    onDismiss = {
+                    visible = !shortcutInfoDismissed, onDismiss = {
                         shortcutInfoDismissed = true
                         prefs.edit {
                             putBoolean(KEY_SHORTCUT_INFO_DISMISSED, true)
                         }
-                    }
-                )
+                    })
             }
         }
     }
@@ -291,7 +288,7 @@ class AppChooserActivity : ComponentActivity() {
         delay: Long,
         label: String,
         createPinnedShortcut: Boolean,
-        addDynamicShortcut: Boolean,
+        createDynamicShortcut: Boolean,
         layout: AppPairIconLayout
     ) {
         if (createPinnedShortcut) {
@@ -305,7 +302,7 @@ class AppChooserActivity : ComponentActivity() {
             )
             shortcutManager.requestPinShortcut(shortcutInfo, null)
         }
-        if (addDynamicShortcut) {
+        if (createDynamicShortcut) {
             val shortcutInfo = createShortcutInfo(
                 firstApp = firstApp,
                 secondApp = secondApp,
@@ -316,9 +313,10 @@ class AppChooserActivity : ComponentActivity() {
             )
             try {
                 shortcutManager.addDynamicShortcuts(listOf(shortcutInfo))
+                val viewModel by viewModels<BeNiceViewModel>()
+                updateDynamicShortcuts()
             } catch (_: IllegalArgumentException) {
-                Toast.makeText(this, R.string.something_went_wrong, Toast.LENGTH_LONG)
-                    .show()
+                Toast.makeText(this, R.string.something_went_wrong, Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -363,13 +361,13 @@ class AppChooserActivity : ComponentActivity() {
         }
         return getDrawable(R.mipmap.ic_launcher)!!
     }
-}
 
-@SuppressLint("NewApi")
-fun updateDynamicShortcuts(context: Context, viewModel: BeNiceViewModel) {
-    val shortcutManager = context.getSystemService(ShortcutManager::class.java)
-    shortcutManager?.let {
-        viewModel.setDynamicShortcuts(it.dynamicShortcuts)
+    @SuppressLint("NewApi")
+    fun updateDynamicShortcuts() {
+        val viewModel by viewModels<BeNiceViewModel>()
+        getSystemService(ShortcutManager::class.java)?.let { shortcutManager ->
+            viewModel.setDynamicShortcuts(shortcutManager.dynamicShortcuts)
+        }
     }
 }
 

@@ -72,7 +72,6 @@ fun BeNiceScreen(
     val scope = rememberCoroutineScope()
     var firstApp: AppInfo? by remember { mutableStateOf<AppInfo?>(null) }
     var secondApp: AppInfo? by remember { mutableStateOf<AppInfo?>(null) }
-    val canAddDynamicShortcut = maxShortcutCountPerActivity > state.dynamicShortcuts.size
     val closeSheet: (() -> Unit) -> Unit = { callback ->
         scope.launch { sheetState.hide() }.invokeOnCompletion {
             callback()
