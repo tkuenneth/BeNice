@@ -6,7 +6,6 @@ import android.content.pm.ShortcutInfo
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.widget.Toast
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,13 +15,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -43,12 +40,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import kotlinx.coroutines.launch
@@ -383,32 +376,20 @@ fun AppPairDialog(
                     }
                 }
                 if (canAddPinnedShortcut) {
-                    Row(
-                        modifier = Modifier.clickable {
-                            createPinnedShortcut = !createPinnedShortcut
-                        },
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(text = stringResource(id = R.string.create_pinned_shortcut))
-                        Checkbox(
-                            checked = createPinnedShortcut,
-                            onCheckedChange = { createPinnedShortcut = it })
-                    }
+                    BeNiceCheckbox(
+                        checked = createPinnedShortcut,
+                        text = stringResource(id = R.string.create_pinned_shortcut),
+                        onCheckedChange = { createPinnedShortcut = it }
+                    )
                 } else {
                     ErrorText(text = stringResource(R.string.cannot_create_pinned_shortcuts))
                 }
                 if (canAddDynamicShortcut) {
-                    Row(
-                        modifier = Modifier.clickable {
-                            addDynamicShortcut = !addDynamicShortcut
-                        },
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(text = stringResource(id = R.string.add_dynamic_shortcut))
-                        Checkbox(
-                            checked = addDynamicShortcut,
-                            onCheckedChange = { addDynamicShortcut = it })
-                    }
+                    BeNiceCheckbox(
+                        checked = addDynamicShortcut,
+                        text = stringResource(id = R.string.create_dynamic_shortcut),
+                        onCheckedChange = { addDynamicShortcut = it }
+                    )
                 } else {
                     ErrorText(text = stringResource(R.string.cannot_create_dynamic_shortcuts))
                 }
