@@ -292,10 +292,11 @@ class AppChooserActivity : ComponentActivity() {
         secondApp: AppInfo,
         delay: Long,
         label: String,
+        createPinnedShortcut: Boolean,
         addDynamicShortcut: Boolean,
         layout: AppPairIconLayout
     ) {
-        if (shortcutManager.isRequestPinShortcutSupported) {
+        if (createPinnedShortcut) {
             val shortcutInfo = createShortcutInfo(
                 firstApp = firstApp,
                 secondApp = secondApp,

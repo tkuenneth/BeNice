@@ -37,6 +37,7 @@
     <string name="show_image">Show image</string>
     <string name="image">Image</string>
     <string name="add_dynamic_shortcut">Add dynamic shortcut</string>
+    <string name="create_pinned_shortcut">Create pinned shortcut</string>
     <string name="remove_all_dynamic_shortcuts">Remove all dynamic shortcuts</string>
 
     <string name="arrange_horizontally">Arrange app icons horizontally</string>
@@ -69,4 +70,6 @@
     <string name="shortcut_info_08">\u0020app icon. And they can be picked up dynamically by apps supporting this feature.</string>
     <string name="got_it">Got it</string>
 
+    <string name="read_more_on">Read more on %1$s</string>
+    <string name="tkuenneth_dev_benice_shortcuts_url" translatable="false">https://tkuenneth.dev/BeNice/shortcuts.html</string>
 </resources>

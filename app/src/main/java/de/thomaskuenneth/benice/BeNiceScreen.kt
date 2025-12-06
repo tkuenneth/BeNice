@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -42,8 +43,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import kotlinx.coroutines.launch
@@ -63,7 +68,7 @@ fun BeNiceScreen(
     onAddLinkClicked: (AppInfo) -> Unit,
     onOpenAppInfoClicked: (AppInfo) -> Unit,
     onCopyNamesClicked: (AppInfo) -> Unit,
-    onAppsForAppPairSelected: (AppInfo, AppInfo, Long, String, Boolean, AppPairIconLayout) -> Unit,
+    onAppsForAppPairSelected: (AppInfo, AppInfo, Long, String, Boolean, Boolean, AppPairIconLayout) -> Unit,
     selectBitmap: () -> Unit,
     queryInstalledApps: () -> Unit,
     createShortcutIcon: (ShortcutInfo) -> Drawable,
@@ -171,8 +176,16 @@ fun BeNiceScreen(
             secondApp = secondApp,
             onSecondAppChanged = { secondApp = it },
             onDismissRequest = hideAppPairDialog,
-            onFinished = { first, second, delay, label, addDynamicShortcut, layout ->
-                onAppsForAppPairSelected(first, second, delay, label, addDynamicShortcut, layout)
+            onFinished = { first, second, delay, label, createPinnedShortcut, addDynamicShortcut, layout ->
+                onAppsForAppPairSelected(
+                    first,
+                    second,
+                    delay,
+                    label,
+                    createPinnedShortcut,
+                    addDynamicShortcut,
+                    layout
+                )
                 hideAppPairDialog()
             },
             selectBitmap = selectBitmap
@@ -190,7 +203,7 @@ fun AppPairDialog(
     secondApp: AppInfo?,
     onSecondAppChanged: (AppInfo?) -> Unit,
     onDismissRequest: () -> Unit,
-    onFinished: (AppInfo, AppInfo, Long, String, Boolean, AppPairIconLayout) -> Unit,
+    onFinished: (AppInfo, AppInfo, Long, String, Boolean, Boolean, AppPairIconLayout) -> Unit,
     selectBitmap: () -> Unit
 ) {
     val sameApp: Boolean by remember(firstApp, secondApp) {
@@ -211,7 +224,8 @@ fun AppPairDialog(
             )
         )
     }
-    var addDynamicShortcut by remember { mutableStateOf(true) }
+    var createPinnedShortcut by remember { mutableStateOf(canAddPinnedShortcut) }
+    var addDynamicShortcut by remember { mutableStateOf(canAddDynamicShortcut) }
     var layout: AppPairIconLayout by remember { mutableStateOf(AppPairIconLayout.Horizontal) }
     var customImage by remember { mutableStateOf<Bitmap?>(null) }
     val updateLayout = {
@@ -223,10 +237,16 @@ fun AppPairDialog(
                     !label.isTooLong() &&
                     bothAppsChosen &&
                     !sameApp &&
-                    (addDynamicShortcut || canAddPinnedShortcut),
+                    ((addDynamicShortcut && canAddDynamicShortcut) || (createPinnedShortcut && canAddPinnedShortcut)),
             onClick = {
                 onFinished(
-                    firstApp!!, secondApp!!, delay.toLong(), label, addDynamicShortcut, layout
+                    firstApp!!,
+                    secondApp!!,
+                    delay.toLong(),
+                    label,
+                    createPinnedShortcut,
+                    addDynamicShortcut,
+                    layout
                 )
             }) {
             Text(text = stringResource(id = R.string.create))
@@ -362,7 +382,19 @@ fun AppPairDialog(
                         )
                     }
                 }
-                if (!canAddPinnedShortcut) {
+                if (canAddPinnedShortcut) {
+                    Row(
+                        modifier = Modifier.clickable {
+                            createPinnedShortcut = !createPinnedShortcut
+                        },
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(text = stringResource(id = R.string.create_pinned_shortcut))
+                        Checkbox(
+                            checked = createPinnedShortcut,
+                            onCheckedChange = { createPinnedShortcut = it })
+                    }
+                } else {
                     ErrorText(text = stringResource(R.string.cannot_create_pinned_shortcuts))
                 }
                 if (canAddDynamicShortcut) {
@@ -380,6 +412,7 @@ fun AppPairDialog(
                 } else {
                     ErrorText(text = stringResource(R.string.cannot_create_dynamic_shortcuts))
                 }
+                LearnMore(modifier = Modifier.fillMaxWidth())
             }
             AnimatedUpOrDownButton(
                 isUpButton = true,
