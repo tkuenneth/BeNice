@@ -91,9 +91,7 @@ fun AppChooser(
             with(LocalDensity.current) { WindowInsets.navigationBars.getBottom(this).toDp() }
         val lazyGridState = rememberLazyGridState()
         LaunchedEffect(dynamicShortcuts) {
-            if (dynamicShortcuts.isNotEmpty()) {
-                lazyGridState.animateScrollToItem(0)
-            }
+            lazyGridState.animateScrollToItem(0)
         }
         LazyVerticalGrid(
             modifier = Modifier.fillMaxSize(),
