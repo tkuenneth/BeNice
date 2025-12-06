@@ -174,9 +174,7 @@ class AppChooserActivity : ComponentActivity() {
                 ) { paddingValues ->
                     BeNiceScreen(
                         canAddPinnedShortcut = shortcutManager.isRequestPinShortcutSupported,
-                        canAddDynamicShortcut = shortcutManager.maxShortcutCountPerActivity >
-                                shortcutManager.dynamicShortcuts.size +
-                                shortcutManager.manifestShortcuts.size,
+                        maxShortcutCountPerActivity = shortcutManager.maxShortcutCountPerActivity,
                         windowSizeClass = windowSizeClass,
                         state = state,
                         onClick = ::onClick,

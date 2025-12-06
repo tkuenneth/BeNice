@@ -53,7 +53,7 @@ private const val launchDelayMax = 5000F
 @Composable
 fun BeNiceScreen(
     canAddPinnedShortcut: Boolean,
-    canAddDynamicShortcut: Boolean,
+    maxShortcutCountPerActivity: Int,
     windowSizeClass: WindowSizeClass,
     state: BeNiceScreenUiState,
     onClick: (AppInfo, Boolean) -> Unit,
@@ -72,6 +72,7 @@ fun BeNiceScreen(
     val scope = rememberCoroutineScope()
     var firstApp: AppInfo? by remember { mutableStateOf<AppInfo?>(null) }
     var secondApp: AppInfo? by remember { mutableStateOf<AppInfo?>(null) }
+    val canAddDynamicShortcut = maxShortcutCountPerActivity > state.dynamicShortcuts.size
     val closeSheet: (() -> Unit) -> Unit = { callback ->
         scope.launch { sheetState.hide() }.invokeOnCompletion {
             callback()
@@ -162,7 +163,7 @@ fun BeNiceScreen(
     if (showAppPairDialog) {
         AppPairDialog(
             canAddPinnedShortcut = canAddPinnedShortcut,
-            canAddDynamicShortcut = canAddDynamicShortcut,
+            maxShortcutCountPerActivity = maxShortcutCountPerActivity,
             state = state,
             firstApp = firstApp,
             onFirstAppChanged = { firstApp = it },
@@ -189,7 +190,7 @@ fun BeNiceScreen(
 @Composable
 fun AppPairDialog(
     canAddPinnedShortcut: Boolean,
-    canAddDynamicShortcut: Boolean,
+    maxShortcutCountPerActivity: Int,
     state: BeNiceScreenUiState,
     firstApp: AppInfo?,
     onFirstAppChanged: (AppInfo?) -> Unit,
@@ -199,6 +200,7 @@ fun AppPairDialog(
     onFinished: (AppInfo, AppInfo, Long, String, Boolean, Boolean, AppPairIconLayout) -> Unit,
     selectBitmap: () -> Unit
 ) {
+    val canAddDynamicShortcut = maxShortcutCountPerActivity > state.dynamicShortcuts.size
     val sameApp: Boolean by remember(firstApp, secondApp) {
         mutableStateOf(
             sameApp(
@@ -375,23 +377,30 @@ fun AppPairDialog(
                         )
                     }
                 }
-                if (canAddPinnedShortcut) {
-                    BeNiceCheckbox(
-                        checked = createPinnedShortcut,
-                        text = stringResource(id = R.string.create_pinned_shortcut),
-                        onCheckedChange = { createPinnedShortcut = it }
-                    )
-                } else {
-                    ErrorText(text = stringResource(R.string.cannot_create_pinned_shortcuts))
-                }
-                if (canAddDynamicShortcut) {
-                    BeNiceCheckbox(
-                        checked = addDynamicShortcut,
-                        text = stringResource(id = R.string.create_dynamic_shortcut),
-                        onCheckedChange = { addDynamicShortcut = it }
-                    )
-                } else {
-                    ErrorText(text = stringResource(R.string.cannot_create_dynamic_shortcuts))
+                Column(horizontalAlignment = Alignment.Start) {
+                    if (canAddPinnedShortcut) {
+                        BeNiceCheckbox(
+                            checked = createPinnedShortcut,
+                            text = stringResource(id = R.string.create_pinned_shortcut),
+                            onCheckedChange = { createPinnedShortcut = it }
+                        )
+                    } else {
+                        ErrorText(text = stringResource(R.string.cannot_create_pinned_shortcuts))
+                    }
+                    if (canAddDynamicShortcut) {
+                        BeNiceCheckbox(
+                            checked = addDynamicShortcut,
+                            text = stringResource(id = R.string.create_dynamic_shortcut),
+                            onCheckedChange = { addDynamicShortcut = it }
+                        )
+                    } else {
+                        ErrorText(
+                            text = stringResource(
+                                R.string.cannot_create_dynamic_shortcuts,
+                                maxShortcutCountPerActivity
+                            )
+                        )
+                    }
                 }
                 LearnMore(modifier = Modifier.fillMaxWidth())
             }
