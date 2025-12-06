@@ -20,9 +20,11 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -87,8 +89,16 @@ fun AppChooser(
     } else {
         val bottomPadding =
             with(LocalDensity.current) { WindowInsets.navigationBars.getBottom(this).toDp() }
+        val lazyGridState = rememberLazyGridState()
+        LaunchedEffect(dynamicShortcuts) {
+            if (dynamicShortcuts.isNotEmpty()) {
+                lazyGridState.animateScrollToItem(0)
+            }
+        }
         LazyVerticalGrid(
-            modifier = Modifier.fillMaxSize(), columns = GridCells.Fixed(count = columns)
+            modifier = Modifier.fillMaxSize(),
+            columns = GridCells.Fixed(count = columns),
+            state = lazyGridState
         ) {
             items(dynamicShortcuts, key = { it.id }) { shortcut ->
                 ShortcutLauncher(
