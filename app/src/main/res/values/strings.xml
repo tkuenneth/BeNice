@@ -70,6 +70,6 @@
     <string name="shortcut_info_08">\u0020app icon. And they can be picked up dynamically by apps supporting this feature.</string>
     <string name="got_it">Got it</string>
 
-    <string name="read_more_on">Read more on %1$s</string>
+    <string name="read_more_on">Read more about shortcuts on %1$s</string>
     <string name="tkuenneth_dev_benice_shortcuts_url" translatable="false">https://tkuenneth.dev/BeNice/shortcuts.html</string>
 </resources>
