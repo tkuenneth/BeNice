@@ -121,6 +121,11 @@ fun AppChooser(
                             .padding(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        Text(
+                            text = stringResource(R.string.shortcut_info_06),
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                         chunkedShortcuts.forEach { rowItems ->
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -137,7 +142,6 @@ fun AppChooser(
                                         )
                                     }
                                 }
-                                // Fill up empty space in the row
                                 repeat(columns - rowItems.size) {
                                     Spacer(Modifier.weight(1f))
                                 }
