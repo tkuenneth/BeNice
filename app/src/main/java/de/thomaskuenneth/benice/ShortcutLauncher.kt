@@ -34,7 +34,7 @@ fun ShortcutLauncher(
         Text(
             text = label.ifEmpty { stringResource(id = R.string.unknown) },
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )

@@ -6,7 +6,10 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
@@ -25,6 +28,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -98,20 +103,48 @@ fun AppChooser(
             columns = GridCells.Fixed(count = columns),
             state = lazyGridState
         ) {
-            items(dynamicShortcuts, key = { it.id }) { shortcut ->
-                ShortcutLauncher(
-                    icon = createShortcutIcon(shortcut),
-                    label = shortcut.shortLabel.toString(),
-                    modifier = Modifier
-                        .padding(
-                            start = maxOf(left, 16.dp),
-                            end = maxOf(right, 16.dp),
-                            top = 8.dp,
-                            bottom = 8.dp
-                        )
-                        .clip(shape = MaterialTheme.shapes.small)
-                        .clickable { onShortcutClicked(shortcut) }
-                )
+            if (dynamicShortcuts.isNotEmpty()) {
+                item(span = { GridItemSpan(maxLineSpan) }) {
+                    val chunkedShortcuts = remember(dynamicShortcuts, columns) {
+                        dynamicShortcuts.chunked(columns)
+                    }
+                    Column(
+                        modifier = Modifier
+                            .padding(
+                                start = maxOf(left, 16.dp),
+                                end = maxOf(right, 16.dp),
+                                top = 8.dp,
+                                bottom = 8.dp
+                            )
+                            .clip(MaterialTheme.shapes.small)
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .padding(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        chunkedShortcuts.forEach { rowItems ->
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                rowItems.forEach { shortcut ->
+                                    key(shortcut.id) {
+                                        ShortcutLauncher(
+                                            icon = createShortcutIcon(shortcut),
+                                            label = shortcut.shortLabel.toString(),
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .clip(shape = MaterialTheme.shapes.small)
+                                                .clickable { onShortcutClicked(shortcut) }
+                                        )
+                                    }
+                                }
+                                // Fill up empty space in the row
+                                repeat(columns - rowItems.size) {
+                                    Spacer(Modifier.weight(1f))
+                                }
+                            }
+                        }
+                    }
+                }
             }
             if (showSpecials) {
                 item {
@@ -160,7 +193,7 @@ fun AppChooser(
                                 bottom = 8.dp
                             )
                             .clip(shape = MaterialTheme.shapes.small)
-                            .background(color = MaterialTheme.colorScheme.secondaryContainer),
+                            .background(color = MaterialTheme.colorScheme.surfaceVariant),
                         contentAlignment = when (letterPosition) {
                             0 -> Alignment.CenterStart
                             1 -> Alignment.Center
@@ -172,7 +205,7 @@ fun AppChooser(
                             text = item,
                             style = MaterialTheme.typography.labelLarge,
                             textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 } else if (item is AppInfo) {
