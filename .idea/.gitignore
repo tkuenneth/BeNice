@@ -14,5 +14,6 @@ kotlinc.xml
 AndroidProjectSystem.xml
 deviceManager.xml
 appInsightsSettings.xml
+markdown.xml
 
 codeStyles/*
